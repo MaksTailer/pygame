@@ -107,9 +107,13 @@ class Player(pygame.sprite.Sprite):
 class Camera:
     def __init__(self):
         self.offset_x = 0
+        self.offset_y = 0
 
     def update(self, player):
+        # Следим за игроком по X и Y
         self.offset_x = -(player.rect.x - SCREEN_WIDTH // 2)
+        self.offset_y = -(player.rect.y - SCREEN_HEIGHT // 2)
+
 
 # === Перезапуск ===
 def restart_game():
@@ -130,7 +134,6 @@ def load_map(filename):
                     world_x = x * tmx_data.tilewidth
                     world_y = y * tmx_data.tileheight
 
-                    # Название слоя определяет тип
                     if layer.name.lower() == "ground":
                         tiles.append(pygame.Rect(world_x, world_y, TILE_SIZE, TILE_SIZE))
                     elif layer.name.lower() == "traps":
@@ -139,7 +142,7 @@ def load_map(filename):
 
 # === Основная функция ===
 def main():
-    tmx_data, tiles, traps = load_map("assets/1map.tmx")
+    tmx_data, tiles, traps = load_map("assets/2map.tmx")
 
     player = Player(100, 300)
     camera = Camera()
@@ -163,10 +166,15 @@ def main():
                 for x, y, gid in layer:
                     tile = tmx_data.get_tile_image_by_gid(gid)
                     if tile:
-                        screen.blit(tile, (x * TILE_SIZE + camera.offset_x, y * TILE_SIZE))
+                        screen.blit(
+                            tile,
+                            (x * TILE_SIZE + camera.offset_x, y * TILE_SIZE + camera.offset_y)
+                        )
+
 
         # Игрок
-        screen.blit(player.image, (player.rect.x + camera.offset_x, player.rect.y))
+        screen.blit(player.image, (player.rect.x + camera.offset_x, player.rect.y + camera.offset_y))
+
 
         # Жизни
         for i in range(player.hp):
