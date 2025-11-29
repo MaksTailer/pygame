@@ -25,14 +25,15 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         dx = 0
 
-        # базовая скорость перемещения (вне воды и зыбучих песков)
+        # базовая скорость
         base_speed = 5
         if in_water:
             base_speed = max(1, int(base_speed * 0.5))
         elif in_quicksand:
             base_speed = max(1, int(base_speed * 0.25))
 
-        # Движение и анимация — используем base_speed
+        # анимация/движение
+        current_img = self.sprites["idle"]
         if keys[pygame.K_LEFT]:
             dx = -base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
@@ -41,29 +42,27 @@ class Player(pygame.sprite.Sprite):
             dx = base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = True
-        else:
-            current_img = self.sprites["idle"]
 
-        # Прыжок (сила прыжка не уменьшается)
-        if keys[pygame.K_SPACE] and self.on_ground:
+        # прыжок (сила не меняется)
+        if keys[pygame.K_SPACE] and self.on_ground and not in_quicksand:
             self.vel_y = -15
             self.on_ground = False
             current_img = self.sprites["jump"]
 
-        # Гравитация
+        # гравитация
         self.vel_y += 1
         if self.vel_y > 10:
             self.vel_y = 10
         dy = self.vel_y
 
-        # Сбрасываем состояние на землю
+        # сбрасываем on_ground — восстановится при вертикальной коллизии
         self.on_ground = False
 
-        # Горизонтальная коллизия по хитбоксу
-        future_rect_x = self.hitbox.copy()
-        future_rect_x.x += dx
+        # горизонтальная коллизия (по hitbox)
+        future_x = self.hitbox.copy()
+        future_x.x += dx
         for tile in tiles:
-            if isinstance(tile, pygame.Rect) and tile.colliderect(future_rect_x):
+            if isinstance(tile, pygame.Rect) and tile.colliderect(future_x):
                 if dx > 0:
                     self.hitbox.right = tile.left
                 elif dx < 0:
@@ -71,11 +70,11 @@ class Player(pygame.sprite.Sprite):
                 dx = 0
                 break
 
-        # Вертикальная коллизия по хитбоксу
-        future_rect_y = self.hitbox.copy()
-        future_rect_y.y += dy
+        # вертикальная коллизия (по hitbox)
+        future_y = self.hitbox.copy()
+        future_y.y += dy
         for tile in tiles:
-            if isinstance(tile, pygame.Rect) and tile.colliderect(future_rect_y):
+            if isinstance(tile, pygame.Rect) and tile.colliderect(future_y):
                 if dy > 0:
                     self.hitbox.bottom = tile.top
                     self.vel_y = 0
@@ -86,13 +85,12 @@ class Player(pygame.sprite.Sprite):
                 dy = 0
                 break
 
-        # Проверка ловушек
+        # ловушки (по hitbox)
         now = pygame.time.get_ticks()
         for trap in traps:
             trect = trap if isinstance(trap, pygame.Rect) else getattr(trap, "rect", None)
             if isinstance(trect, pygame.Rect):
-                trap_collision = trect.inflate(-40, -40)
-                if trap_collision.colliderect(self.hitbox):
+                if trect.colliderect(self.hitbox):
                     if now - self.last_hit_time > self.invincible_delay:
                         self.hp -= 1
                         self.last_hit_time = now
@@ -102,11 +100,11 @@ class Player(pygame.sprite.Sprite):
                             except NameError:
                                 pygame.event.post(pygame.event.Event(pygame.QUIT))
 
-        # Применяем движения к хитбоксу
+        # применяем движение
         self.hitbox.x += dx
         self.hitbox.y += dy
 
-        # Если игрок ниже границы карты — отслеживаем длительность падения
+        # падение за карту
         if self.hitbox.top > self.map_height:
             if not self.on_ground:
                 if self.fall_start_time is None:
@@ -122,9 +120,10 @@ class Player(pygame.sprite.Sprite):
         else:
             self.fall_start_time = None
 
-        # Синхронизируем визуальный rect с хитбоксом
+        # синхронизация визуала с хитбоксом
         if not self.facing_right:
             self.image = pygame.transform.flip(current_img, True, False)
         else:
             self.image = current_img
         self.rect = self.image.get_rect(midbottom=self.hitbox.midbottom)
+# ...existing code...

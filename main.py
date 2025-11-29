@@ -43,8 +43,32 @@ def restart_game():
 
 # === Основная функция ===
 # ...existing code...
-def main():
-    tmx_data, tiles, traps, platforms = load_map("assets/2map.tmx")
+# ...existing code...
+def main(current_level=0):
+    # Загружаем текущий уровень
+    if current_level >= len(LEVELS):
+        current_level = 0  # Циклим на первый уровень (или финальный экран)
+    
+    level_file = LEVELS[current_level]
+    tmx_data, tiles, traps, platforms = load_map(level_file)
+
+    # --- Сбор портала выхода ---
+    exit_portal = None
+    for layer in tmx_data.visible_layers:
+        if isinstance(layer, pytmx.TiledObjectGroup):
+            if layer.name.lower() == "exit":  # Ищем слой с именем "Exit"
+                for obj in layer:
+                    # Объект может быть с gid (спрайт) или без, берём его координаты
+                    exit_portal = pygame.Rect(
+                        int(obj.x), 
+                        int(obj.y), 
+                        int(obj.width) if obj.width else TILE_SIZE, 
+                        int(obj.height) if obj.height else TILE_SIZE
+                    )
+                    print(f"Портал найден на уровне {current_level + 1}: {exit_portal}")
+                    break
+            if exit_portal:
+                break
 
     # --- Сбор прямоугольников воды и зыбучих песков (одним проходом) ---
     water_layer = None
@@ -59,7 +83,7 @@ def main():
                 for x, y, gid in layer:
                     if gid != 0:
                         water_rects.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
-            elif name == "Quicksand":
+            elif name in ("Quicksand", "Sand"):
                 quicksand_layer = layer
                 for x, y, gid in layer:
                     if gid != 0:
@@ -69,10 +93,12 @@ def main():
     player = Player(100, 300, map_pixel_height, player_sprites)
     camera = Camera()
 
-    print("TILE_SIZE:", TILE_SIZE, "CHAR_SIZE:", CHAR_SIZE, "player.image.size:", player.image.get_size(), "player.rect:", player.rect.size)
+    print(f"Уровень {current_level + 1}/{len(LEVELS)}")
 
     running = True
-    while running:
+    level_complete = False
+    
+    while running and not level_complete:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -81,24 +107,23 @@ def main():
         for platform in platforms:
             platform.update()
 
-        # 2. Формируем поверхность для коллизий (тайлы + верх платформ)
+        # 2. Формируем поверхность для коллизий
         all_tiles = tiles.copy()
         for platform in platforms:
             top_surface = pygame.Rect(platform.rect.x, platform.rect.y - 1, platform.rect.width, 2)
             all_tiles.append(top_surface)
 
-        # Добавляем quicksand_rects в список коллизий — чтобы песок был "землёй"
         if quicksand_rects:
             all_tiles.extend(quicksand_rects)
 
-        # 3. Вычисляем, в воде/на песках ли хитбокс игрока (до обновления)
-        in_water = any(w.colliderect(player.hitbox) for w in water_rects) if water_rects else False
-        in_quicksand = any(q.colliderect(player.hitbox) for q in quicksand_rects) if quicksand_rects else False
-
-        # 4. Обновляем игрока с флагами среды
+        # 3. Вычисляем состояние (вода/пески)
+        feet = pygame.Rect(player.hitbox.x, player.hitbox.bottom, player.hitbox.width, 2)
+        in_water = any(w.colliderect(feet) for w in water_rects) if water_rects else False
+        in_quicksand = any(q.colliderect(feet) for q in quicksand_rects) if quicksand_rects else False
+        
         player.update(all_tiles, traps, in_water, in_quicksand)
 
-        # 5. Применяем движение платформ к игроку (по hitbox)
+        # 4. Применяем движение платформ
         for platform in platforms:
             on_platform = (
                 player.hitbox.bottom >= platform.rect.top - 5 and
@@ -112,12 +137,22 @@ def main():
                 player.hitbox.y += int(platform.last_move.y)
                 player.rect = player.image.get_rect(midbottom=player.hitbox.midbottom)
 
+        # 5. Проверяем выход из уровня
+        if exit_portal and player.hitbox.colliderect(exit_portal):
+            level_complete = True
+            print(f"Уровень {current_level + 1} завершён! Переход на уровень {current_level + 2}...")
+
+        # 6. Проверяем смерть
+        if player.hp <= 0:
+            print("Игрок погиб! Перезагрузка уровня 1...")
+            main(0)  # Возвращаемся на первый уровень
+            return
+
         camera.update(player)
 
         # === ОТРИСОВКА ===
         screen.blit(background, (0, 0))
 
-        # Отрисовка тайлов
         for layer in tmx_data.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
@@ -125,38 +160,58 @@ def main():
                     if tile:
                         screen.blit(tile, (x * TILE_SIZE + camera.offset_x, y * TILE_SIZE + camera.offset_y))
 
-        # Платформы
         for platform in platforms:
             platform.draw(screen, (camera.offset_x, camera.offset_y))
 
-        # Игрок (рисуем один раз)
         screen.blit(player.image, (player.rect.x + camera.offset_x, player.rect.y + camera.offset_y))
 
-        # Контур хитбокса игрока для отладки
-        pr = player.hitbox.copy()
-        pr.x += camera.offset_x; pr.y += camera.offset_y
-        pygame.draw.rect(screen, (255, 0, 0), pr, 2)
+        for layer in tmx_data.visible_layers:
+            if isinstance(layer, pytmx.TiledObjectGroup):
+                for obj in layer:
+                    gid = getattr(obj, "gid", None)
+                    if gid:
+                        img = tmx_data.get_tile_image_by_gid(gid)
+                        if img:
+                            # выравниваем позицию по сетке тайлов, чтобы избежать смещения на 1 клетку
+                            tile_x = int(obj.x) // TILE_SIZE
+                            tile_y = int(obj.y) // TILE_SIZE
+                            draw_x = tile_x * TILE_SIZE + camera.offset_x
+                            # для tile-объекта y в Tiled обычно указывает на нижнюю границу тайла,
+                            # поэтому добавляем TILE_SIZE и вычитаем высоту изображения
+                            draw_y = tile_y * TILE_SIZE + camera.offset_y + TILE_SIZE - img.get_height()
+                            screen.blit(img, (draw_x, draw_y))
 
-        # Слой воды рисуем поверх игрока (если есть)
+
+        # Слой воды (рисовать поверх игрока)
         if water_layer is not None:
             for x, y, gid in water_layer:
                 tile = tmx_data.get_tile_image_by_gid(gid)
                 if tile:
                     screen.blit(tile, (x * TILE_SIZE + camera.offset_x, y * TILE_SIZE + camera.offset_y))
 
-        # Слой зыбучих песков (опционально можно рисовать поверх или под игроком)
+        # Слой песков (если хотите видеть их поверх/под игроком)
         if quicksand_layer is not None:
             for x, y, gid in quicksand_layer:
                 tile = tmx_data.get_tile_image_by_gid(gid)
                 if tile:
                     screen.blit(tile, (x * TILE_SIZE + camera.offset_x, y * TILE_SIZE + camera.offset_y))
 
-        # Жизни
+        # HUD
         for i in range(player.hp):
             screen.blit(tile_heart, (10 + i * 40, 10))
+        
+        # Номер уровня
+        font = pygame.font.Font(None, 36)
+        level_text = font.render(f"Level {current_level + 1}/{len(LEVELS)}", True, (255, 255, 255))
+        screen.blit(level_text, (SCREEN_WIDTH - 300, 10))
 
         pygame.display.flip()
         clock.tick(FPS)
 
+    # Переход на следующий уровень
+    if level_complete:
+        main(current_level + 1)
+
 if __name__ == "__main__":
-    main()
+    main(0)  # Начинаем с уровня 0 (level-1.tmx)
+

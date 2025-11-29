@@ -13,7 +13,7 @@ def load_map(filename):
         if isinstance(layer, pytmx.TiledTileLayer):
             for x, y, gid in layer:
                 tile = tmx_data.get_tile_image_by_gid(gid)
-                if tile and layer.name.lower() == "ground":
+                if tile and layer.name.lower() in ("ground", "sand"):
                     tiles.append(pygame.Rect(x * tmx_data.tilewidth, y * tmx_data.tileheight, TILE_SIZE, TILE_SIZE))
                 elif tile and layer.name.lower() == "traps":
                     traps.append(pygame.Rect(x * tmx_data.tilewidth, y * tmx_data.tileheight, TILE_SIZE, TILE_SIZE))
