@@ -1,0 +1,9 @@
+
+# Настройки окна
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
+TILE_SIZE = 64
+CHAR_SIZE = 128
+FPS = 60
+
+
