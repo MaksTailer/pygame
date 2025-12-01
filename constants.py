@@ -18,6 +18,18 @@ LEVELS = [
     "assets/level-9.tmx",
     "assets/level-10.tmx"
 ]
+BACKGROUNDS = [
+    "assets/background-1.png",
+    "assets/background-2.png",
+    "assets/background-3.png",
+    "assets/background-4.png",
+    "assets/background-4.png",
+    "assets/background-4.png",
+    "assets/background-4.png",
+    "assets/background-4.png",
+    "assets/background-4.png",
+    "assets/background-4.png"
+]
 CURRENT_LEVEL = 0
 
 

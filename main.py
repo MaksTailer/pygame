@@ -7,6 +7,7 @@ from platform import *
 from camera import *
 from player import *
 from map_loader import load_map
+from enemy import Bacteria
 
 pygame.init()
 
@@ -15,10 +16,11 @@ pygame.display.set_caption("Map from Tiled")
 clock = pygame.time.Clock()
 
 # === Загрузка ассетов ===
-background = pygame.image.load("assets/background.png").convert()
+background = pygame.image.load("assets/background-1.png").convert()
 background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 character_sheet = pygame.image.load("assets/characters.png").convert_alpha()
 ground = pygame.image.load("assets/ground.png").convert_alpha()
+enemy_sheet = pygame.image.load("assets/enemies.png").convert_alpha()
 
 # === Функция для нарезки спрайтов ===
 def get_sprite(sheet, x, y, w, h):
@@ -34,6 +36,9 @@ player_sprites = {
     "idle": get_sprite(character_sheet, 0, 5, CHAR_SIZE, CHAR_SIZE)
 }
 
+    
+    # Нарезаем спрайты бактерии из enemies.png
+    # Предполагаем: левый верхний (0,0) — idle, снизу (0, CHAR_SIZE) и (CHAR_SIZE, CHAR_SIZE) — walk1, walk2
 tile_heart = get_sprite(ground, 13, 17, TILE_SIZE, TILE_SIZE)
 
 
@@ -42,15 +47,14 @@ def restart_game():
     main()
 
 # === Основная функция ===
-# ...existing code...
-# ...existing code...
 def main(current_level=0):
     # Загружаем текущий уровень
     if current_level >= len(LEVELS):
         current_level = 0  # Циклим на первый уровень (или финальный экран)
     
     level_file = LEVELS[current_level]
-    tmx_data, tiles, traps, platforms = load_map(level_file)
+    tmx_data, tiles, traps, platforms, enemy_objs = load_map(level_file)
+
 
     # --- Сбор портала выхода ---
     exit_portal = None
@@ -93,6 +97,23 @@ def main(current_level=0):
     player = Player(100, 300, map_pixel_height, player_sprites)
     camera = Camera()
 
+    
+    bacteria_sprites = {
+    "idle": get_sprite(enemy_sheet, 0, 0, TILE_SIZE, TILE_SIZE),      # (0, 0)
+    "walk1": get_sprite(enemy_sheet, 0, 1, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
+    "walk2": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),
+    }
+        
+    enemies = []
+    for eo in enemy_objs:
+        if eo.get("name","").lower() == "bacteria":
+            ex = eo["x"]
+            ey = eo["y"] - TILE_SIZE
+            enemies.append(Bacteria(ex, ey, bacteria_sprites))
+
+    # список снарядов (врагов)
+    enemy_projectiles = []
+
     print(f"Уровень {current_level + 1}/{len(LEVELS)}")
 
     running = True
@@ -122,6 +143,36 @@ def main(current_level=0):
         in_quicksand = any(q.colliderect(feet) for q in quicksand_rects) if quicksand_rects else False
         
         player.update(all_tiles, traps, in_water, in_quicksand)
+
+        # Обновляем врагов
+        for e in enemies:
+            e.update(player, all_tiles, enemy_projectiles)
+            # контакт враг - игрок
+            if e.hitbox.colliderect(player.hitbox):
+                now = pygame.time.get_ticks()
+                if now - player.last_hit_time > player.invincible_delay:
+                    player.hp -= 1
+                    player.last_hit_time = now
+                    player.vel_y = -8  # отскок вверх
+
+        # Обновляем снаряды врагов
+        dt = 1
+        for proj in enemy_projectiles[:]:
+            dead = proj.update(dt)
+            if proj.rect.colliderect(player.hitbox):
+                now = pygame.time.get_ticks()
+                if now - player.last_hit_time > player.invincible_delay:
+                    player.hp -= 1
+                    player.last_hit_time = now
+                try:
+                    enemy_projectiles.remove(proj)
+                except ValueError:
+                    pass
+            elif dead:
+                try:
+                    enemy_projectiles.remove(proj)
+                except ValueError:
+                    pass
 
         # 4. Применяем движение платформ
         for platform in platforms:
@@ -163,21 +214,40 @@ def main(current_level=0):
         for platform in platforms:
             platform.draw(screen, (camera.offset_x, camera.offset_y))
 
+
+
         screen.blit(player.image, (player.rect.x + camera.offset_x, player.rect.y + camera.offset_y))
+        for e in enemies:
+            e.draw(screen, (camera.offset_x, camera.offset_y))
+
+        # Рисуем снаряды врагов
+        for proj in enemy_projectiles:
+            proj.draw(screen, (camera.offset_x, camera.offset_y))
+
+
+
 
         for layer in tmx_data.visible_layers:
             if isinstance(layer, pytmx.TiledObjectGroup):
                 for obj in layer:
                     gid = getattr(obj, "gid", None)
                     if gid:
+                        # Пропускаем отрисовку tile-объектов платформ
+                        layer_name = (getattr(layer, "name", "") or "").lower()
+                        obj_name = (getattr(obj, "name", "") or "").lower()
+                        if layer_name in ("movingplatform", "movingplatforms", "platforms") or obj_name == "movingplatform":
+                            continue
+
+                        # Пропускаем tile-объекты с именем "exit" (портал рисуется отдельно через зелёный контур)
+                        if obj_name == "exit":
+                            continue
+
                         img = tmx_data.get_tile_image_by_gid(gid)
                         if img:
-                            # выравниваем позицию по сетке тайлов, чтобы избежать смещения на 1 клетку
+                            # выравниваем позицию по сетке тайлов
                             tile_x = int(obj.x) // TILE_SIZE
                             tile_y = int(obj.y) // TILE_SIZE
                             draw_x = tile_x * TILE_SIZE + camera.offset_x
-                            # для tile-объекта y в Tiled обычно указывает на нижнюю границу тайла,
-                            # поэтому добавляем TILE_SIZE и вычитаем высоту изображения
                             draw_y = tile_y * TILE_SIZE + camera.offset_y + TILE_SIZE - img.get_height()
                             screen.blit(img, (draw_x, draw_y))
 
