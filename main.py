@@ -7,7 +7,7 @@ from platform import *
 from camera import *
 from player import *
 from map_loader import load_map
-from enemy import Bacteria
+from enemy import Bacteria, Virus
 
 pygame.init()
 
@@ -103,6 +103,12 @@ def main(current_level=0):
     "walk1": get_sprite(enemy_sheet, 0, 1, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
     "walk2": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),
     }
+
+    virus_sprites = {
+    "idle": get_sprite(enemy_sheet, 3, 6, TILE_SIZE, TILE_SIZE),      # (0, 0)
+    "walk1": get_sprite(enemy_sheet, 3, 6, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
+    "walk2": get_sprite(enemy_sheet, 7, 3, TILE_SIZE, TILE_SIZE),
+    }
         
     enemies = []
     for eo in enemy_objs:
@@ -110,6 +116,13 @@ def main(current_level=0):
             ex = eo["x"]
             ey = eo["y"] - TILE_SIZE
             enemies.append(Bacteria(ex, ey, bacteria_sprites))
+        elif eo.get("name","").lower() == "virus":
+            ex = eo["x"]
+            ey = eo["y"] - TILE_SIZE
+            enemies.append(Virus(ex, ey, virus_sprites))
+    
+    print(f"Создано врагов: {len(enemies)} (бактерий: {sum(1 for e in enemies if isinstance(e, Bacteria))}, вирусов: {sum(1 for e in enemies if isinstance(e, Virus))})")
+    print(f"Объекты врагов из карты: {enemy_objs}")
 
     # список снарядов (врагов)
     enemy_projectiles = []

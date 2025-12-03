@@ -28,7 +28,9 @@ def load_map(filename):
                 # враги: объект с именем "Bacteria"
                 if oname_lower == "bacteria":
                     enemies.append({"name":"Bacteria","x":int(obj.x),"y":int(obj.y)})
-
+                elif oname_lower == "virus":
+                    enemies.append({"name":"Virus","x":int(obj.x),"y":int(obj.y)})
+            
                 # --- Платформы: более надёжное определение/корректное позиционирование ---
                 obj_type = (getattr(obj, "type", None) or "").lower()
                 layer_name = getattr(layer, "name", "") or ""

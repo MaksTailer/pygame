@@ -18,7 +18,6 @@ class Player(pygame.sprite.Sprite):
         self.invincible_delay = 1000
         self.map_height = map_height  # высота карты в пикселях
         self.fall_start_time = None   # время начала падения за пределы карты
-
 # ...existing code...
     def update(self, tiles, traps, in_water=False, in_quicksand=False):
         import pygame
@@ -43,20 +42,17 @@ class Player(pygame.sprite.Sprite):
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = True
 
-        # прыжок (сила не меняется)
+        # прыжок (запрещаем на зыбучих песках)
         if keys[pygame.K_SPACE] and self.on_ground and not in_quicksand:
             self.vel_y = -15
             self.on_ground = False
-            current_img = self.sprites["jump"]
+            current_img = self.sprites.get("jump", current_img)
 
         # гравитация
         self.vel_y += 1
         if self.vel_y > 10:
             self.vel_y = 10
         dy = self.vel_y
-
-        # сбрасываем on_ground — восстановится при вертикальной коллизии
-        self.on_ground = False
 
         # горизонтальная коллизия (по hitbox)
         future_x = self.hitbox.copy()
@@ -73,9 +69,12 @@ class Player(pygame.sprite.Sprite):
         # вертикальная коллизия (по hitbox)
         future_y = self.hitbox.copy()
         future_y.y += dy
+        collided_vert = False
         for tile in tiles:
             if isinstance(tile, pygame.Rect) and tile.colliderect(future_y):
+                collided_vert = True
                 if dy > 0:
+                    # падаем вниз — ставим на поверхность и считаем на земле
                     self.hitbox.bottom = tile.top
                     self.vel_y = 0
                     self.on_ground = True
@@ -84,6 +83,20 @@ class Player(pygame.sprite.Sprite):
                     self.vel_y = 0
                 dy = 0
                 break
+
+        # применяем движение
+        self.hitbox.x += dx
+        self.hitbox.y += dy
+
+        # Если не было вертикального столкновения — проверяем опору точечно (под центром ступни).
+        # Это гарантирует, что при стоянии на краю (частичная опора) будет корректно обнаружено наличие/отсутствие земли.
+        feet_check_point = (self.hitbox.centerx, self.hitbox.bottom + 1)
+        on_ground_precise = False
+        for tile in tiles:
+            if isinstance(tile, pygame.Rect) and tile.collidepoint(feet_check_point):
+                on_ground_precise = True
+                break
+        self.on_ground = on_ground_precise
 
         # ловушки (по hitbox)
         now = pygame.time.get_ticks()
@@ -99,10 +112,6 @@ class Player(pygame.sprite.Sprite):
                                 restart_game()
                             except NameError:
                                 pygame.event.post(pygame.event.Event(pygame.QUIT))
-
-        # применяем движение
-        self.hitbox.x += dx
-        self.hitbox.y += dy
 
         # падение за карту
         if self.hitbox.top > self.map_height:
