@@ -18,7 +18,12 @@ class Player(pygame.sprite.Sprite):
         self.invincible_delay = 1000
         self.map_height = map_height  # высота карты в пикселях
         self.fall_start_time = None   # время начала падения за пределы карты
-# ...existing code...
+
+        # Счётчики коллектиблов
+        self.coins = 0
+        self.diamonds = 0
+
+
     def update(self, tiles, traps, in_water=False, in_quicksand=False):
         import pygame
         keys = pygame.key.get_pressed()
@@ -90,10 +95,20 @@ class Player(pygame.sprite.Sprite):
 
         # Если не было вертикального столкновения — проверяем опору точечно (под центром ступни).
         # Это гарантирует, что при стоянии на краю (частичная опора) будет корректно обнаружено наличие/отсутствие земли.
-        feet_check_point = (self.hitbox.centerx, self.hitbox.bottom + 1)
         on_ground_precise = False
+        # небольшая область под ногами
+        foot_rect = pygame.Rect(self.hitbox.left + 2, self.hitbox.bottom, max(1, self.hitbox.width - 4), 3)
         for tile in tiles:
-            if isinstance(tile, pygame.Rect) and tile.collidepoint(feet_check_point):
+            if not isinstance(tile, pygame.Rect):
+                continue
+            # 1) прямое пересечение небольшой области под ногами
+            if tile.colliderect(foot_rect):
+                on_ground_precise = True
+                break
+            # 2) дополнительно проверяем точки по краям — чтобы не потерять опору на краю тайла
+            if tile.collidepoint((self.hitbox.left + 2, self.hitbox.bottom + 1)) or \
+               tile.collidepoint((self.hitbox.right - 2, self.hitbox.bottom + 1)) or \
+               tile.collidepoint((self.hitbox.centerx, self.hitbox.bottom + 1)):
                 on_ground_precise = True
                 break
         self.on_ground = on_ground_precise

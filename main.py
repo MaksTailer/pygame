@@ -43,17 +43,60 @@ tile_heart = get_sprite(ground, 13, 17, TILE_SIZE, TILE_SIZE)
 
 
 # === Перезапуск ===
-def restart_game():
-    main()
+def restart_game(saved_coins=0, saved_diamonds=0):
+    main(0, saved_coins, saved_diamonds)
 
 # === Основная функция ===
-def main(current_level=0):
+def main(current_level=0, saved_coins=0, saved_diamonds=0):
     # Загружаем текущий уровень
     if current_level >= len(LEVELS):
         current_level = 0  # Циклим на первый уровень (или финальный экран)
     
     level_file = LEVELS[current_level]
+    bg_path = BACKGROUNDS[current_level % len(BACKGROUNDS)]
+    background = pygame.image.load(bg_path).convert()
+    background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    
     tmx_data, tiles, traps, platforms, enemy_objs = load_map(level_file)
+
+    collectibles = []  # элементы: {"type":"coin"/"diamond","rect":Rect,"gid":gid,"value":int,"draw":(x,y)}
+    for layer in tmx_data.visible_layers:
+        if isinstance(layer, pytmx.TiledObjectGroup):
+            lname = (getattr(layer, "name", "") or "").lower()
+            if lname == "collectibles":
+                for obj in layer:
+                    oname = (getattr(obj, "name", "") or "").lower()
+                    if oname in ("coin", "diamond"):
+                        obj_w = int(obj.width) if getattr(obj, "width", None) else TILE_SIZE
+                        obj_h = int(obj.height) if getattr(obj, "height", None) else TILE_SIZE
+                        # rect для коллизии (top-left)
+                        rect_x = int(obj.x)
+                        rect_y = int(obj.y) - obj_h
+                        rect = pygame.Rect(rect_x, rect_y, obj_w, obj_h)
+                        props = getattr(obj, "properties", {}) or {}
+                        # default value = 1 для всех (если нужно другое — задайте свойство value в Tiled)
+                        value = int(props.get("value", 1))
+                        gid = getattr(obj, "gid", None)
+
+                        # рассчитываем корректную позицию для отрисовки аналогично общим tile-объектам
+                        draw_x = rect_x
+                        draw_y = rect_y
+                        if gid:
+                            img = tmx_data.get_tile_image_by_gid(gid)
+                            if img:
+                                tile_x = int(obj.x) // TILE_SIZE
+                                tile_y = int(obj.y) // TILE_SIZE
+                                draw_x = tile_x * TILE_SIZE
+                                draw_y = tile_y * TILE_SIZE + TILE_SIZE - img.get_height()
+
+                        collectibles.append({
+                            "type": oname,
+                            "rect": rect,
+                            "gid": gid,
+                            "value": value,
+                            "draw": (draw_x, draw_y)
+                        })
+    print(f"Collectibles on map: {len(collectibles)}")
 
 
     # --- Сбор портала выхода ---
@@ -95,6 +138,8 @@ def main(current_level=0):
 
     map_pixel_height = tmx_data.height * tmx_data.tileheight
     player = Player(100, 300, map_pixel_height, player_sprites)
+    player.coins = int(saved_coins)
+    player.diamonds = int(saved_diamonds)
     camera = Camera()
 
     
@@ -186,6 +231,18 @@ def main(current_level=0):
                     enemy_projectiles.remove(proj)
                 except ValueError:
                     pass
+        
+        # --- Подбор коллектиблов ---
+        for c in collectibles[:]:
+            if c["rect"].colliderect(player.hitbox):
+                if c["type"] == "coin":
+                    player.coins += c["value"]
+                else:
+                    player.diamonds += c["value"]
+                try:
+                    collectibles.remove(c)
+                except ValueError:
+                    pass
 
         # 4. Применяем движение платформ
         for platform in platforms:
@@ -209,7 +266,7 @@ def main(current_level=0):
         # 6. Проверяем смерть
         if player.hp <= 0:
             print("Игрок погиб! Перезагрузка уровня 1...")
-            main(0)  # Возвращаемся на первый уровень
+            main(0, 0, 0)  # Возвращаемся на первый уровень
             return
 
         camera.update(player)
@@ -255,6 +312,10 @@ def main(current_level=0):
                         if obj_name == "exit":
                             continue
 
+                        # Пропускаем отрисовку коллектиблов — будем рисовать их через список collectibles
+                        if layer_name == "collectibles" and obj_name in ("coin", "diamond"):
+                            continue
+
                         img = tmx_data.get_tile_image_by_gid(gid)
                         if img:
                             # выравниваем позицию по сетке тайлов
@@ -264,6 +325,17 @@ def main(current_level=0):
                             draw_y = tile_y * TILE_SIZE + camera.offset_y + TILE_SIZE - img.get_height()
                             screen.blit(img, (draw_x, draw_y))
 
+        # Рисуем текущие (не собранные) коллектиблы
+        for c in collectibles:
+            gid = c.get("gid")
+            if gid is not None:
+                img = tmx_data.get_tile_image_by_gid(gid)
+                if img:
+                    draw_x, draw_y = c.get("draw", (c["rect"].x, c["rect"].y))
+                    screen.blit(img, (draw_x + camera.offset_x, draw_y + camera.offset_y))
+            else:
+                # если без gid, рисуем простым прямоугольником (на случай)
+                screen.fill((255, 215, 0), (c["rect"].x + camera.offset_x, c["rect"].y + camera.offset_y, c["rect"].width, c["rect"].height))
 
         # Слой воды (рисовать поверх игрока)
         if water_layer is not None:
@@ -282,6 +354,13 @@ def main(current_level=0):
         # HUD
         for i in range(player.hp):
             screen.blit(tile_heart, (10 + i * 40, 10))
+
+         # Счётчики коллектиблов
+        font = pygame.font.Font(None, 36)
+        coin_text = font.render(f"Coins: {player.coins}", True, (255, 215, 0))
+        diamond_text = font.render(f"Diamonds: {player.diamonds}", True, (0, 200, 255))
+        screen.blit(coin_text, (10, 60))
+        screen.blit(diamond_text, (10, 100))
         
         # Номер уровня
         font = pygame.font.Font(None, 36)
@@ -292,9 +371,9 @@ def main(current_level=0):
         clock.tick(FPS)
 
     # Переход на следующий уровень
-    if level_complete:
-        main(current_level + 1)
+    if level_complete:      
+        main(current_level + 1, player.coins, player.diamonds)
 
 if __name__ == "__main__":
-    main(0)  # Начинаем с уровня 0 (level-1.tmx)
+    main(0, 0, 0)  # Начинаем с уровня 0 (level-1.tmx)
 

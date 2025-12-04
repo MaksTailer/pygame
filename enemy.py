@@ -1,4 +1,5 @@
 import pygame
+import math
 from constants import TILE_SIZE, CHAR_SIZE
 
 class Projectile:
@@ -159,85 +160,124 @@ class Virus:
         self.image = self.sprites.get("idle", pygame.Surface((TILE_SIZE, TILE_SIZE)))
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
         self.hp = 2
-        self.shoot_delay = 800  # мс (чаще стреляет, чем бактерия)
+        self.shoot_delay = 800  # базовый интервал
         self.last_shot = 0
         self.facing_right = True
         self.anim_frame = 0
-        
-        # Полёт (синусоида)
-        self.flight_time = 0
-        self.flight_speed = 2  # скорость горизонтального движения
-        self.flight_amplitude = 20  # амплитуда синусоиды
-        self.flight_frequency = 0.05  # частота колебаний
+
+        # Полёт / патруль
         self.start_x = x
-        self.start_y = y
+        self.start_y = y  # фиксированная высота патруля
+        self.patrol_radius = TILE_SIZE * 6  # радиус патруля (по X) — можно изменить
+        self.patrol_speed = 1.2
+        self.patrol_dir = 1
+
+        # Синусоидальная атака
+        self.flight_time = 0
+        self.flight_amplitude = 18
+        self.flight_frequency = 0.08
+        self.chase_speed = 2.6  # скорость при преследовании
+
+        # агро-параметры
+        self.aggro_distance_x = TILE_SIZE * 10  # если игрок ближе по X — агро
+        self.aggro_distance_y = TILE_SIZE * 6   # по Y — ограничение агро
 
     def update(self, player, tiles, projectiles):
-        import math
         now = pygame.time.get_ticks()
-        
-        # Отслеживание расстояния до игрока
-        dx_to_player = (player.hitbox.centerx - self.hitbox.centerx)
-        dy_to_player = (player.hitbox.centery - self.hitbox.centery)
-        dist_to_player = math.sqrt(dx_to_player**2 + dy_to_player**2)
-        
-        # Полёт по синусоиде (горизонтальное движение + волна по Y)
+
+        dx_to_player = player.hitbox.centerx - self.hitbox.centerx
+        dy_to_player = player.hitbox.centery - self.hitbox.centery
+        abs_dx = abs(dx_to_player)
+        abs_dy = abs(dy_to_player)
+
+        # состояние: патруль или агро
+        aggro = (abs_dx <= self.aggro_distance_x and abs_dy <= self.aggro_distance_y)
+
         self.flight_time += 1
-        move_x = self.flight_speed
-        move_y = self.flight_amplitude * math.sin(self.flight_time * self.flight_frequency)
-        
-        self.hitbox.x += int(move_x)
-        self.hitbox.y += int(move_y)
-        
-        # Разворот при столкновении со стеной
-        for t in tiles:
-            if isinstance(t, pygame.Rect) and t.colliderect(self.hitbox):
-                self.flight_speed *= -1  # меняем направление
-                self.hitbox.x -= int(move_x) * 2  # отскок назад
-                break
-        
-        # Агрессия: если игрок близко и выше врага — активное преследование
-        is_aggro = dist_to_player < 400 and dy_to_player < 300
-        
-        current_img = self.sprites.get("idle")
-        
-        # Стрельба хаотично или при агро
-        if is_aggro:
-            # при агро стреляем часто вниз
-            shoot_delay = 400
+
+        if not aggro:
+            # ПАТРУЛЬ: летим ровно на start_y, туда-обратно в пределах patrol_radius
+            move_x = self.patrol_speed * self.patrol_dir
+            self.hitbox.x += int(move_x)
+            # держим фиксированную высоту
+            self.hitbox.y = int(self.start_y)
+
+            # при достижении границ радиуса — разворачиваемся
+            cx = self.hitbox.centerx
+            if cx < self.start_x - self.patrol_radius or cx > self.start_x + self.patrol_radius:
+                # откат назад и смена направления
+                self.patrol_dir *= -1
+                self.hitbox.x += int(self.patrol_speed * self.patrol_dir) * 2
+
+            # при столкновении со стеной — разворачиваемся
+            for t in tiles:
+                if isinstance(t, pygame.Rect) and t.colliderect(self.hitbox):
+                    # откат и смена направления
+                    if self.patrol_dir > 0:
+                        self.hitbox.right = t.left
+                    else:
+                        self.hitbox.left = t.right
+                    self.patrol_dir *= -1
+                    break
+
+            # визуал: смотрим по направлению патруля
+            self.facing_right = self.patrol_dir > 0
+
+            shoot_delay = max(self.shoot_delay, 1200)  # редко стреляет в патруле
+
         else:
-            # иначе редко и хаотично
-            shoot_delay = 1200
-        
-        if now - self.last_shot >= shoot_delay:
-            # Стреляем вниз (или с небольшим разбросом в стороны при агро)
-            if is_aggro and abs(dx_to_player) < 200:
-                # прямо вниз если игрок под нами
-                vx = 0
-            else:
-                # хаотично вниз в стороны
-                import random
-                vx = random.uniform(-0.1, 0.1)
-            
-            px = self.hitbox.centerx
-            py = self.hitbox.centery
-            proj = Projectile(px, py, vx, 0.25, color=(100, 255, 100))  # светло-зелёный
-            projectiles.append(proj)
-            self.last_shot = now
-        
-        # анимация (переключение спрайтов)
+            # AGGRO: преследуем игрока, движение по X к игроку + синусоида по Y
+            # простая логика: направиться в сторону игрока с ограничением скорости
+            dir_sign = 1 if dx_to_player > 0 else -1
+            desired_speed = min(self.chase_speed, max(0.6, abs_dx / (TILE_SIZE * 2)))
+            move_x = desired_speed * dir_sign
+            move_y = self.flight_amplitude * math.sin(self.flight_time * self.flight_frequency)
+
+            self.hitbox.x += int(move_x)
+            self.hitbox.y = int(self.start_y + move_y)
+
+            # при столкновении со стеной — откатываемся и пробуем перелететь (простая логика: развернуться)
+            for t in tiles:
+                if isinstance(t, pygame.Rect) and t.colliderect(self.hitbox):
+                    if move_x > 0:
+                        self.hitbox.right = t.left
+                    else:
+                        self.hitbox.left = t.right
+                    # слегка отступаем и чуть меняем высоту, чтобы не застрять
+                    self.hitbox.y -= TILE_SIZE // 2
+                    break
+
+            self.facing_right = move_x > 0
+
+            # более частая стрельба при агро
+            shoot_delay = 400
+
+            # Атака: стреляем в направлении игрока
+            if now - self.last_shot >= shoot_delay:
+                px = self.hitbox.centerx
+                py = self.hitbox.centery
+                vec = pygame.Vector2(player.hitbox.centerx - px, player.hitbox.centery - py)
+                if vec.length() == 0:
+                    vec = pygame.Vector2(1, 0)
+                vec = vec.normalize()
+                proj_speed = 5.0
+                vx = vec.x * proj_speed
+                vy = vec.y * proj_speed
+                proj = Projectile(px, py, vx, vy, color=(150, 255, 120))
+                projectiles.append(proj)
+                self.last_shot = now
+
+        # Анимация (простая)
         self.anim_frame = (pygame.time.get_ticks() // 200) % 2
         current_img = self.sprites.get("walk1" if self.anim_frame == 0 else "walk2", self.sprites.get("idle"))
-        
-        # отражаем спрайт если летит влево
-        if self.flight_speed < 0:
+
+        # отражение спрайта по направлению движения
+        if not self.facing_right:
             current_img = pygame.transform.flip(current_img, True, False)
-            self.facing_right = False
-        else:
-            self.facing_right = True
-        
+
         self.image = current_img
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
+
 
     def draw(self, surf, offset):
         draw_pos = (self.rect.x + offset[0], self.rect.y + offset[1])
