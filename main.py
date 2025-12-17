@@ -7,7 +7,7 @@ from platform import *
 from camera import *
 from player import *
 from map_loader import load_map
-from enemy import Bacteria, Virus
+from enemy import Bacteria, Virus, Projectile
 
 pygame.init()
 
@@ -18,9 +18,10 @@ clock = pygame.time.Clock()
 # === Загрузка ассетов ===
 background = pygame.image.load("assets/background-1.png").convert()
 background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
-character_sheet = pygame.image.load("assets/characters.png").convert_alpha()
+character_sheet = pygame.image.load("assets/person.png").convert_alpha()
 ground = pygame.image.load("assets/ground.png").convert_alpha()
 enemy_sheet = pygame.image.load("assets/enemies.png").convert_alpha()
+shot_sheet = pygame.image.load("assets/fire.png").convert_alpha()
 
 # === Функция для нарезки спрайтов ===
 def get_sprite(sheet, x, y, w, h):
@@ -30,10 +31,10 @@ def get_sprite(sheet, x, y, w, h):
 
 # === Спрайты персонажа ===
 player_sprites = {
-    "walk1": get_sprite(character_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
-    "walk2": get_sprite(character_sheet, 0, 1, CHAR_SIZE, CHAR_SIZE),
+    "walk1": get_sprite(character_sheet, 0, 1, CHAR_SIZE, CHAR_SIZE),
+    "walk2": get_sprite(character_sheet, 0, 2, CHAR_SIZE, CHAR_SIZE),
     "jump": get_sprite(character_sheet, 0, 3, CHAR_SIZE, CHAR_SIZE),
-    "idle": get_sprite(character_sheet, 0, 5, CHAR_SIZE, CHAR_SIZE)
+    "idle": get_sprite(character_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE)
 }
 
     
@@ -144,16 +145,18 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
 
     
     bacteria_sprites = {
-    "idle": get_sprite(enemy_sheet, 0, 0, TILE_SIZE, TILE_SIZE),      # (0, 0)
-    "walk1": get_sprite(enemy_sheet, 0, 1, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
+    "idle": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),      # (0, 0)
+    "walk1": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
     "walk2": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),
     }
 
     virus_sprites = {
-    "idle": get_sprite(enemy_sheet, 3, 6, TILE_SIZE, TILE_SIZE),      # (0, 0)
-    "walk1": get_sprite(enemy_sheet, 3, 6, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
-    "walk2": get_sprite(enemy_sheet, 7, 3, TILE_SIZE, TILE_SIZE),
+    "idle": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),      # (0, 0)
+    "walk1": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
+    "walk2": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),
     }
+    proj_img = get_sprite(shot_sheet, 0, 0, TILE_SIZE, TILE_SIZE)
+    #proj_img = pygame.transform.scale(proj_img, (32, 32))
         
     enemies = []
     for eo in enemy_objs:
@@ -171,6 +174,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
 
     # список снарядов (врагов)
     enemy_projectiles = []
+    player_projectiles = []
 
     print(f"Уровень {current_level + 1}/{len(LEVELS)}")
 
@@ -181,6 +185,47 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                # мировые координаты мыши
+                mx, my = event.pos
+                world_x = mx - camera.offset_x
+                world_y = my - camera.offset_y
+                px = player.hitbox.centerx
+                py = player.hitbox.centery
+                vec = pygame.Vector2(world_x - px, world_y - py)
+                if vec.length() == 0:
+                    vec = pygame.Vector2(1, 0)
+                vec = vec.normalize()
+                speed = 8.0
+                vx = vec.x * speed
+                vy = vec.y * speed
+                p = Projectile(px, py, vx, vy, color=(255,220,80), life=3000, image=proj_img)
+                player_projectiles.append(p)
+        
+        for proj in player_projectiles[:]:
+            dead = proj.update(dt)
+            hit_any = False
+            for e in enemies[:]:
+                if proj.rect.colliderect(e.hitbox):
+                    # наносим урон = 1
+                    try:
+                        died = e.damage(1)
+                    except Exception:
+                        # если нет метода damage, уменьшаем hp напрямую
+                        e.hp -= 1
+                        died = e.hp <= 0
+                    if died:
+                        try:
+                            enemies.remove(e)
+                        except ValueError:
+                            pass
+                    hit_any = True
+                    break
+            if hit_any or dead:
+                try:
+                    player_projectiles.remove(proj)
+                except ValueError:
+                    pass
 
         # 1. Обновляем платформы
         for platform in platforms:
@@ -294,6 +339,8 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         for proj in enemy_projectiles:
             proj.draw(screen, (camera.offset_x, camera.offset_y))
 
+        for proj in player_projectiles:
+            proj.draw(screen, (camera.offset_x, camera.offset_y))
 
 
 

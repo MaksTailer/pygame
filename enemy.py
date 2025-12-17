@@ -3,22 +3,34 @@ import math
 from constants import TILE_SIZE, CHAR_SIZE
 
 class Projectile:
-    def __init__(self, x, y, vx, vy, color=(0,255,0), life=3000):
+    def __init__(self, x, y, vx, vy, color=(0,255,0), life=3000, image=None):
         self.pos = pygame.Vector2(x, y)
         self.v = pygame.Vector2(vx, vy)
-        self.rect = pygame.Rect(int(x), int(y), 8, 8)
         self.color = color
         self.spawn_time = pygame.time.get_ticks()
         self.life = life
+        self.image = image
+        if self.image:
+            # rect по центру изображения
+            self.rect = self.image.get_rect(center=(int(self.pos.x), int(self.pos.y)))
+        else:
+            self.rect = pygame.Rect(int(x), int(y), 8, 8)
 
     def update(self, dt):
         self.pos += self.v * dt
-        self.rect.topleft = (int(self.pos.x), int(self.pos.y))
+        if self.image:
+            self.rect = self.image.get_rect(center=(int(self.pos.x), int(self.pos.y)))
+        else:
+            self.rect.topleft = (int(self.pos.x), int(self.pos.y))
         return pygame.time.get_ticks() - self.spawn_time > self.life
 
     def draw(self, surf, offset):
-        r = self.rect.move(offset[0], offset[1])
-        pygame.draw.rect(surf, self.color, r)
+        if self.image:
+            r = self.image.get_rect(center=(self.rect.centerx + offset[0], self.rect.centery + offset[1]))
+            surf.blit(self.image, r.topleft)
+        else:
+            r = self.rect.move(offset[0], offset[1])
+            pygame.draw.rect(surf, self.color, r)
 
 class Bacteria:
     def __init__(self, x, y, sprites):

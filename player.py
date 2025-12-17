@@ -38,11 +38,11 @@ class Player(pygame.sprite.Sprite):
 
         # анимация/движение
         current_img = self.sprites["idle"]
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             dx = -base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = False
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_d]:
             dx = base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = True
