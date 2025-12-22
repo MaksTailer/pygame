@@ -1,14 +1,13 @@
 import pygame
 from constants import *
-# ...existing code...
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, map_height, sprites):
         super().__init__()
         self.sprites = sprites
         self.image = self.sprites["idle"]
-        # визуальный rect (для отрисовки) — будет синхронизирован с хитбоксом
         self.rect = self.image.get_rect(topleft=(x, y))
-        # ФИЗИЧЕСКИЙ хитбокс (размер под тайл)
         self.hitbox = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
         self.vel_y = 0
         self.on_ground = False
@@ -16,12 +15,20 @@ class Player(pygame.sprite.Sprite):
         self.facing_right = True
         self.last_hit_time = 0
         self.invincible_delay = 1000
-        self.map_height = map_height  # высота карты в пикселях
-        self.fall_start_time = None   # время начала падения за пределы карты
+        self.map_height = map_height
+        self.fall_start_time = None
 
         # Счётчики коллектиблов
         self.coins = 0
         self.diamonds = 0
+
+        # Shift-способность (защита)
+        self.shield_active = False
+        self.shield_start_time = 0
+        self.shield_duration = 3000  # 3 сек неуязвимости
+        self.shield_cooldown = 20000  # 20 сек перезарядка
+        self.shield_last_used = -self.shield_cooldown  # чтобы можно было активировать сразу
+
 
 
     def update(self, tiles, traps, in_water=False, in_quicksand=False):
@@ -36,6 +43,30 @@ class Player(pygame.sprite.Sprite):
         elif in_quicksand:
             base_speed = max(1, int(base_speed * 0.25))
 
+        # === Обработка Shift-способности (защита) ===
+        now = pygame.time.get_ticks()
+        # Проверяем, нажат ли Shift прямо сейчас
+        shift_pressed = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+
+        # Если Shift ОТПУЩЕН — отключаем защиту (даже если не прошло 3 сек)
+        if not shift_pressed and self.shield_active:
+            self.shield_active = False
+        
+        
+        # проверяем, закончилась ли защита
+        if self.shield_active and (now - self.shield_start_time) >= self.shield_duration:
+            self.shield_active = False
+
+        # при нажатии Shift — активируем защиту (если не на перезарядке)
+        shift_pressed = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+        if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+            if not self.shield_active and (now - self.shield_last_used) >= self.shield_cooldown:
+                self.shield_active = True
+                self.shield_start_time = now
+                self.shield_last_used = now
+
+
+
         # анимация/движение
         current_img = self.sprites["idle"]
         if keys[pygame.K_a]:
@@ -46,6 +77,8 @@ class Player(pygame.sprite.Sprite):
             dx = base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = True
+        elif self.shield_active:
+            current_img = self.sprites["shift"]
 
         # прыжок (запрещаем на зыбучих песках)
         if keys[pygame.K_SPACE] and self.on_ground and not in_quicksand:

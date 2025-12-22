@@ -19,9 +19,11 @@ clock = pygame.time.Clock()
 background = pygame.image.load("assets/background-1.png").convert()
 background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 character_sheet = pygame.image.load("assets/person.png").convert_alpha()
+character_shift = pygame.image.load("assets/umbrella.png").convert_alpha()
 ground = pygame.image.load("assets/ground.png").convert_alpha()
 enemy_sheet = pygame.image.load("assets/enemies.png").convert_alpha()
 shot_sheet = pygame.image.load("assets/fire.png").convert_alpha()
+boss_sheet = pygame.image.load("assets/Boss-1.png").convert_alpha()
 
 # === Функция для нарезки спрайтов ===
 def get_sprite(sheet, x, y, w, h):
@@ -34,10 +36,17 @@ player_sprites = {
     "walk1": get_sprite(character_sheet, 0, 1, CHAR_SIZE, CHAR_SIZE),
     "walk2": get_sprite(character_sheet, 0, 2, CHAR_SIZE, CHAR_SIZE),
     "jump": get_sprite(character_sheet, 0, 3, CHAR_SIZE, CHAR_SIZE),
-    "idle": get_sprite(character_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE)
+    "idle": get_sprite(character_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "shift": get_sprite(character_shift , 0, 0, CHAR_SIZE, CHAR_SIZE)
+}
+# === Спрайты босса ===
+boss_sprites = {
+    "idle1": get_sprite(boss_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "idle2": get_sprite(boss_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "idle3": get_sprite(boss_sheet, 1, 0, CHAR_SIZE, CHAR_SIZE),
+    "idle4": get_sprite(boss_sheet, 1, 1, CHAR_SIZE, CHAR_SIZE),
 }
 
-    
     # Нарезаем спрайты бактерии из enemies.png
     # Предполагаем: левый верхний (0,0) — idle, снизу (0, CHAR_SIZE) и (CHAR_SIZE, CHAR_SIZE) — walk1, walk2
 tile_heart = get_sprite(ground, 13, 17, TILE_SIZE, TILE_SIZE)
@@ -250,19 +259,26 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         # Обновляем врагов
         for e in enemies:
             e.update(player, all_tiles, enemy_projectiles)
-            # контакт враг - игрок
-            if e.hitbox.colliderect(player.hitbox):
+            # контакт враг - игрок (но НЕ если активна защита)
+            if e.hitbox.colliderect(player.hitbox) and not player.shield_active:
                 now = pygame.time.get_ticks()
                 if now - player.last_hit_time > player.invincible_delay:
                     player.hp -= 1
                     player.last_hit_time = now
                     player.vel_y = -8  # отскок вверх
 
+
         # Обновляем снаряды врагов
         dt = 1
         for proj in enemy_projectiles[:]:
             dead = proj.update(dt)
-            if proj.rect.colliderect(player.hitbox):
+            if proj.rect.colliderect(player.hitbox) and player.shield_active:
+                # Если щит активен — игнорируем урон, но удаляем снаряд
+                try:
+                    enemy_projectiles.remove(proj)
+                except ValueError:
+                    pass
+            elif proj.rect.colliderect(player.hitbox) and not player.shield_active:
                 now = pygame.time.get_ticks()
                 if now - player.last_hit_time > player.invincible_delay:
                     player.hp -= 1
@@ -276,7 +292,6 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                     enemy_projectiles.remove(proj)
                 except ValueError:
                     pass
-        
         # --- Подбор коллектиблов ---
         for c in collectibles[:]:
             if c["rect"].colliderect(player.hitbox):
