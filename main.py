@@ -7,7 +7,7 @@ from platform import *
 from camera import *
 from player import *
 from map_loader import load_map
-from enemy import Bacteria, Virus, Projectile
+from enemy import Bacteria, Virus, Projectile, Boss
 
 pygame.init()
 
@@ -41,10 +41,7 @@ player_sprites = {
 }
 # === Спрайты босса ===
 boss_sprites = {
-    "idle1": get_sprite(boss_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
-    "idle2": get_sprite(boss_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
-    "idle3": get_sprite(boss_sheet, 1, 0, CHAR_SIZE, CHAR_SIZE),
-    "idle4": get_sprite(boss_sheet, 1, 1, CHAR_SIZE, CHAR_SIZE),
+    "idle1": get_sprite(boss_sheet, 0, 0, 256, 256),
 }
 
     # Нарезаем спрайты бактерии из enemies.png
@@ -168,6 +165,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     #proj_img = pygame.transform.scale(proj_img, (32, 32))
         
     enemies = []
+    boss = None
     for eo in enemy_objs:
         if eo.get("name","").lower() == "bacteria":
             ex = eo["x"]
@@ -177,8 +175,13 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
             ex = eo["x"]
             ey = eo["y"] - TILE_SIZE
             enemies.append(Virus(ex, ey, virus_sprites))
+        if eo.get("name","").lower() == "boss":  # <-- добавить поддержку босса
+            print("Босс создан!")
+            ex = eo["x"]
+            ey = eo["y"] - 256  # босс большой (256x256)
+            boss = Boss(ex, ey, boss_sprites)
     
-    print(f"Создано врагов: {len(enemies)} (бактерий: {sum(1 for e in enemies if isinstance(e, Bacteria))}, вирусов: {sum(1 for e in enemies if isinstance(e, Virus))})")
+    print(f"Создано врагов: {len(enemies)} (бактерий: {sum(1 for e in enemies if isinstance(e, Bacteria))}, вирусов: {sum(1 for e in enemies if isinstance(e, Virus))}), боссов: {1 if boss else 0})")
     print(f"Объекты врагов из карты: {enemy_objs}")
 
     # список снарядов (врагов)
@@ -191,6 +194,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     level_complete = False
     
     while running and not level_complete:
+        dt = 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -211,16 +215,15 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                 p = Projectile(px, py, vx, vy, color=(255,220,80), life=3000, image=proj_img)
                 player_projectiles.append(p)
         
+# Обновляем снаряды игрока
         for proj in player_projectiles[:]:
             dead = proj.update(dt)
             hit_any = False
             for e in enemies[:]:
                 if proj.rect.colliderect(e.hitbox):
-                    # наносим урон = 1
                     try:
                         died = e.damage(1)
                     except Exception:
-                        # если нет метода damage, уменьшаем hp напрямую
                         e.hp -= 1
                         died = e.hp <= 0
                     if died:
@@ -230,6 +233,17 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                             pass
                     hit_any = True
                     break
+            
+            # Проверяем попадание в босса
+            if not hit_any and boss and proj.rect.colliderect(boss.hitbox):
+                try:
+                    died = boss.damage(1)
+                    if died:
+                        boss = None  # босс убит
+                except Exception:
+                    pass
+                hit_any = True
+            
             if hit_any or dead:
                 try:
                     player_projectiles.remove(proj)
@@ -267,6 +281,15 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                     player.last_hit_time = now
                     player.vel_y = -8  # отскок вверх
 
+        if boss:
+            boss.update(player, all_tiles, enemy_projectiles)
+            # контакт босс - игрок
+            if boss.hitbox.colliderect(player.hitbox) and not player.shield_active:
+                now = pygame.time.get_ticks()
+                if now - player.last_hit_time > player.invincible_delay:
+                    player.hp -= 2  # босс наносит больше урона
+                    player.last_hit_time = now
+                    player.vel_y = -10
 
         # Обновляем снаряды врагов
         dt = 1
@@ -349,6 +372,9 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         screen.blit(player.image, (player.rect.x + camera.offset_x, player.rect.y + camera.offset_y))
         for e in enemies:
             e.draw(screen, (camera.offset_x, camera.offset_y))
+        if boss:
+            boss.draw(screen, (camera.offset_x, camera.offset_y))
+
 
         # Рисуем снаряды врагов
         for proj in enemy_projectiles:

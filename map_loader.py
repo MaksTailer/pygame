@@ -30,6 +30,8 @@ def load_map(filename):
                     enemies.append({"name":"Bacteria","x":int(obj.x),"y":int(obj.y)})
                 elif oname_lower == "virus":
                     enemies.append({"name":"Virus","x":int(obj.x),"y":int(obj.y)})
+                elif oname_lower == "boss":
+                    enemies.append({"name":"Boss","x":int(obj.x),"y":int(obj.y)})
             
                 # --- Платформы: более надёжное определение/корректное позиционирование ---
                 obj_type = (getattr(obj, "type", None) or "").lower()
