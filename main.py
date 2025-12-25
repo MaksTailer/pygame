@@ -167,7 +167,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     "walk2": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),
     }
     proj_img = get_sprite(shot_sheet, 0, 0, TILE_SIZE, TILE_SIZE)
-    #proj_img = pygame.transform.scale(proj_img, (32, 32))
+    proj_img = get_sprite(shot_sheet, 0, 1, TILE_SIZE, TILE_SIZE)
         
     enemies = []
     boss = None
@@ -203,8 +203,9 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and player.coins > 0:
                 # мировые координаты мыши
+                player.coins -= 1  # стрельба стоит 1 монету
                 mx, my = event.pos
                 world_x = mx - camera.offset_x
                 world_y = my - camera.offset_y
@@ -325,7 +326,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         for c in collectibles[:]:
             if c["rect"].colliderect(player.hitbox):
                 if c["type"] == "coin":
-                    player.coins += c["value"]
+                    player.coins += c["value"] *10
                     PICKUP_SOUND.play()
                 elif c["type"] == "diamond":
                     player.diamonds += c["value"]
