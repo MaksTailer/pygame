@@ -154,6 +154,7 @@ class Player(pygame.sprite.Sprite):
                 if trect.colliderect(self.hitbox):
                     if now - self.last_hit_time > self.invincible_delay:
                         self.hp -= 1
+                        #HIT_SOUND.play()
                         self.last_hit_time = now
                         if self.hp <= 0:
                             try:

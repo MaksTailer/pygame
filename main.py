@@ -2,6 +2,8 @@ import pygame
 import sys
 import pytmx
 import random
+pygame.init()
+pygame.mixer.init()
 from constants import *
 from platform import *
 from camera import *
@@ -9,7 +11,13 @@ from player import *
 from map_loader import load_map
 from enemy import Bacteria, Virus, Projectile, Boss
 
-pygame.init()
+
+
+def play_level_music(level_index):
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load(FON_MUSIC[level_index])
+    pygame.mixer.music.set_volume(0.3)  # громкость (0.0 – 1.0)
+    pygame.mixer.music.play(-1)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Map from Tiled")
@@ -59,6 +67,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     if current_level >= len(LEVELS):
         current_level = 0  # Циклим на первый уровень (или финальный экран)
     
+    play_level_music(current_level)
     level_file = LEVELS[current_level]
     bg_path = BACKGROUNDS[current_level % len(BACKGROUNDS)]
     background = pygame.image.load(bg_path).convert()
@@ -228,6 +237,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                         died = e.hp <= 0
                     if died:
                         try:
+                            ENEMY_DEATH_SOUND.play()
                             enemies.remove(e)
                         except ValueError:
                             pass
@@ -320,8 +330,10 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
             if c["rect"].colliderect(player.hitbox):
                 if c["type"] == "coin":
                     player.coins += c["value"]
+                    PICKUP_SOUND.play()
                 else:
                     player.diamonds += c["value"]
+                    PICKUP_SOUND.play()
                 try:
                     collectibles.remove(c)
                 except ValueError:
@@ -344,6 +356,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         # 5. Проверяем выход из уровня
         if exit_portal and player.hitbox.colliderect(exit_portal):
             level_complete = True
+            LEVEL_COMPLETE_SOUND.play()
             print(f"Уровень {current_level + 1} завершён! Переход на уровень {current_level + 2}...")
 
         # 6. Проверяем смерть

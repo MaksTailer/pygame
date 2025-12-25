@@ -1,3 +1,4 @@
+import pygame
 
 # Настройки окна
 SCREEN_WIDTH = 800
@@ -30,6 +31,32 @@ BACKGROUNDS = [
     "assets/background-4.png",
     "assets/background-4.png"
 ]
+FON_MUSIC=[
+    "assets/music/l1.mp3",
+    "assets/music/l2.mp3",
+    "assets/music/l3.mp3",
+    "assets/music/l4.mp3",
+    "assets/music/l5.mp3",
+    "assets/music/l6.mp3",
+    "assets/music/l7.mp3",
+    "assets/music/l8.mp3",
+    "assets/music/l9.mp3"
+]
 CURRENT_LEVEL = 0
 
+# Загружаем звуки
+SHOOT_SOUND = pygame.mixer.Sound("assets/music/shoot.mp3")
+HIT_SOUND = pygame.mixer.Sound("assets/music/damage2.mp3")
+ENEMY_DEATH_SOUND = pygame.mixer.Sound("assets/music/kill.mp3")
+LEVEL_COMPLETE_SOUND = pygame.mixer.Sound("assets/music/portal.mp3")
+PICKUP_SOUND = pygame.mixer.Sound("assets/music/selection.mp3")
+HEAL_SOUND = pygame.mixer.Sound("assets/music/heal.mp3")
+
+# Громкость
+SHOOT_SOUND.set_volume(2)
+HIT_SOUND.set_volume(2)
+ENEMY_DEATH_SOUND.set_volume(2)
+LEVEL_COMPLETE_SOUND.set_volume(2)
+PICKUP_SOUND.set_volume(2)
+HEAL_SOUND.set_volume(2)
 
