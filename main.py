@@ -82,7 +82,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
             if lname in ("collectibles", "pickups"):
                 for obj in layer:
                     oname = (getattr(obj, "name", "") or "").lower()
-                    if oname in ("coin", "diamond", "medkit"):
+                    if oname in ("coin", "diamond", "medkit", "ammo"):
                         obj_w = int(obj.width) if getattr(obj, "width", None) else TILE_SIZE
                         obj_h = int(obj.height) if getattr(obj, "height", None) else TILE_SIZE
                         rect_x = int(obj.x)
@@ -166,26 +166,28 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     "walk1": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
     "walk2": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),
     }
-    proj_img = get_sprite(shot_sheet, 0, 0, TILE_SIZE, TILE_SIZE)
-    proj_img = get_sprite(shot_sheet, 0, 1, TILE_SIZE, TILE_SIZE)
+    proj_img1 = get_sprite(shot_sheet, 0, 0, TILE_SIZE, TILE_SIZE)
+    proj_img2 = get_sprite(shot_sheet, 0, 1, TILE_SIZE, TILE_SIZE)
         
     enemies = []
     boss = None
     for eo in enemy_objs:
-        if eo.get("name","").lower() == "bacteria":
+        name = eo.get("name","").lower()
+        hp_val = eo.get("hp", None)
+        if name == "bacteria":
             ex = eo["x"]
             ey = eo["y"] - TILE_SIZE
-            enemies.append(Bacteria(ex, ey, bacteria_sprites))
-        elif eo.get("name","").lower() == "virus":
+            enemies.append(Bacteria(ex, ey, bacteria_sprites, hp=hp_val))
+        elif name == "virus":
             ex = eo["x"]
             ey = eo["y"] - TILE_SIZE
-            enemies.append(Virus(ex, ey, virus_sprites))
-        if eo.get("name","").lower() == "boss":  # <-- добавить поддержку босса
+            enemies.append(Virus(ex, ey, virus_sprites, hp=hp_val))
+        elif name == "boss":
             print("Босс создан!")
             ex = eo["x"]
-            ey = eo["y"] - 256  # босс большой (256x256)
-            boss = Boss(ex, ey, boss_sprites)
-    
+            ey = eo["y"] - 256
+            boss = Boss(ex, ey, boss_sprites, hp=hp_val)
+#
     print(f"Создано врагов: {len(enemies)} (бактерий: {sum(1 for e in enemies if isinstance(e, Bacteria))}, вирусов: {sum(1 for e in enemies if isinstance(e, Virus))}), боссов: {1 if boss else 0})")
     print(f"Объекты врагов из карты: {enemy_objs}")
 
@@ -218,7 +220,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                 speed = 8.0
                 vx = vec.x * speed
                 vy = vec.y * speed
-                p = Projectile(px, py, vx, vy, color=(255,220,80), life=3000, image=proj_img)
+                p = Projectile(px, py, vx, vy, color=(255,220,80), life=3000, image=proj_img1)
                 player_projectiles.append(p)
         
 # Обновляем снаряды игрока
@@ -227,10 +229,11 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
             hit_any = False
             for e in enemies[:]:
                 if proj.rect.colliderect(e.hitbox):
+                    dmg = getattr(player, "projectile_damage", 1)
                     try:
-                        died = e.damage(1)
+                        died = e.damage(dmg)
                     except Exception:
-                        e.hp -= 1
+                        e.hp -= dmg
                         died = e.hp <= 0
                     if died:
                         try:
@@ -244,9 +247,9 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
             # Проверяем попадание в босса
             if not hit_any and boss and proj.rect.colliderect(boss.hitbox):
                 try:
-                    died = boss.damage(1)
+                    died = boss.damage(getattr(player, "projectile_damage", 1))
                     if died:
-                        boss = None  # босс убит
+                        boss = None
                 except Exception:
                     pass
                 hit_any = True
@@ -339,6 +342,21 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                         # если нет max_hp, ограничим максимум любым числом (например 10)
                         max_hp = 10
                     player.hp = min(player.hp + 1, max_hp)
+                elif c["type"] == "ammo":
+                    # при подборе — меняем спрайт снаряда игрока и увеличиваем урон в 2 раза
+                    PICKUP_SOUND.play()
+                    proj_img1 = proj_img2
+                    player.projectile_damage = int(getattr(player, "projectile_damage", 1) * 2)
+                    # если есть gid — используем изображение тайла для снаряда
+                    gid = c.get("gid")
+                    if gid is not None:
+                        img = tmx_data.get_tile_image_by_gid(gid)
+                        if img:
+                            # уменьшить до размера пули
+                            player.proj_img1 = pygame.transform.scale(img, (12, 12))
+                    else:
+                        # fallback: используем дефолт proj_img
+                        player.proj_img1 = proj_img1
                 try:
                     collectibles.remove(c)
                 except ValueError:
@@ -419,7 +437,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                             continue
 
                         # Пропускаем отрисовку коллектиблов — будем рисовать их через список collectibles
-                        if layer_name == "collectibles" and obj_name in ("coin", "diamond", "medkit"):
+                        if layer_name == "collectibles" and obj_name in ("coin", "diamond", "medkit", "ammo"):
                             continue
 
                         img = tmx_data.get_tile_image_by_gid(gid)

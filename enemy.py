@@ -38,13 +38,13 @@ class Projectile:
 
 class Boss:
     """Босс — большой вирус с усиленной атакой"""
-    def __init__(self, x, y, sprites):
+    def __init__(self, x, y, sprites, hp=None):
         self.hitbox = pygame.Rect(int(x), int(y), 256, 256)
         self.sprites = sprites
         self.image = self.sprites.get("idle1", pygame.Surface((256, 256)))
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
-        self.hp = 20
-        self.max_hp = 20
+        self.max_hp = int(hp) if hp is not None else 20
+        self.hp = self.max_hp
         self.vel_y = 0
         self.gravity = 0.8
         self.on_ground = False
@@ -158,14 +158,14 @@ class Boss:
 
 
 class Bacteria:
-    def __init__(self, x, y, sprites):
+    def __init__(self, x, y, sprites, hp=None):
         self.hitbox = pygame.Rect(int(x), int(y), TILE_SIZE, TILE_SIZE)
         self.sprites = sprites
         self.image = self.sprites.get("idle", pygame.Surface((TILE_SIZE, TILE_SIZE)))
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
         self.speed = 1.6
-        self.hp = 3
-        self.max_hp = self.hp
+        self.max_hp = int(hp) if hp is not None else 3
+        self.hp = self.max_hp
         self.shoot_delay = 1200
         self.last_shot = 0
         self.facing_right = True
@@ -301,14 +301,14 @@ class Bacteria:
     
 
 class Virus:
-    def __init__(self, x, y, sprites):
+    def __init__(self, x, y, sprites, hp=None):
         self.hitbox = pygame.Rect(int(x), int(y), TILE_SIZE, TILE_SIZE)
         self.sprites = sprites
         self.image = self.sprites.get("idle", pygame.Surface((TILE_SIZE, TILE_SIZE)))
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
-        self.hp = 2
-        self.max_hp = self.hp
-        self.shoot_delay = 800  # базовый интервал
+        self.max_hp = int(hp) if hp is not None else 2
+        self.hp = self.max_hp
+        self.shoot_delay = 800
         self.last_shot = 0
         self.facing_right = True
         self.anim_frame = 0

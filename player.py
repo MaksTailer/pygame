@@ -29,6 +29,9 @@ class Player(pygame.sprite.Sprite):
         self.shield_cooldown = 20000  # 20 сек перезарядка
         self.shield_last_used = -self.shield_cooldown  # чтобы можно было активировать сразу
 
+        # Параметры оружия/снарядов (по умолчанию)
+        self.projectile_damage = 1
+        self.proj_img = None  # при подборе ammo устано
 
 
     def update(self, tiles, traps, in_water=False, in_quicksand=False):

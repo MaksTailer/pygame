@@ -26,13 +26,26 @@ def load_map(filename):
                 oname = getattr(obj, "name", "") or ""
                 oname_lower = oname.lower()
                 # враги: объект с именем "Bacteria"
+                props = getattr(obj, "properties", {}) or {}
+                hp_prop = None
+                if "hp" in props:
+                    try:
+                        hp_prop = int(props.get("hp"))
+                    except Exception:
+                        hp_prop = None
+                elif "Hp" in props:
+                    try:
+                        hp_prop = int(props.get("Hp"))
+                    except Exception:
+                        hp_prop = None
+
                 if oname_lower == "bacteria":
-                    enemies.append({"name":"Bacteria","x":int(obj.x),"y":int(obj.y)})
+                    enemies.append({"name":"Bacteria","x":int(obj.x),"y":int(obj.y), "hp": hp_prop})
                 elif oname_lower == "virus":
-                    enemies.append({"name":"Virus","x":int(obj.x),"y":int(obj.y)})
+                    enemies.append({"name":"Virus","x":int(obj.x),"y":int(obj.y), "hp": hp_prop})
                 elif oname_lower == "boss":
-                    enemies.append({"name":"Boss","x":int(obj.x),"y":int(obj.y)})
-            
+                    enemies.append({"name":"Boss","x":int(obj.x),"y":int(obj.y), "hp": hp_prop})
+
                 # --- Платформы: более надёжное определение/корректное позиционирование ---
                 obj_type = (getattr(obj, "type", None) or "").lower()
                 layer_name = getattr(layer, "name", "") or ""
