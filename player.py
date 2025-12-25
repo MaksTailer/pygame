@@ -29,6 +29,11 @@ class Player(pygame.sprite.Sprite):
         self.shield_cooldown = 20000  # 20 сек перезарядка
         self.shield_last_used = -self.shield_cooldown  # чтобы можно было активировать сразу
 
+        self.mana = 1.0 if self.diamonds > 0 else 0.0
+        self.mana_duration_ms = 10_000  # 10 секунд полного расхода
+        self.mana_drain_per_ms = 1.0 / self.mana_duration_ms
+        self.last_mana_tick = pygame.time.get_ticks()
+
         # Параметры оружия/снарядов (по умолчанию)
         self.projectile_damage = 1
         self.proj_img = None  # при подборе ammo устано
@@ -46,29 +51,43 @@ class Player(pygame.sprite.Sprite):
         elif in_quicksand:
             base_speed = max(1, int(base_speed * 0.25))
 
-        # === Обработка Shift-способности (защита) ===
+        # ==== МАНА / ЩИТ ====
         now = pygame.time.get_ticks()
-        # Проверяем, нажат ли Shift прямо сейчас
+        elapsed = max(0, now - getattr(self, "last_mana_tick", now))
+        self.last_mana_tick = now
+
         shift_pressed = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
 
-        # Если Shift ОТПУЩЕН — отключаем защиту (даже если не прошло 3 сек)
-        if not shift_pressed and self.shield_active:
-            self.shield_active = False
-        
-        
-        # проверяем, закончилась ли защита
-        if self.shield_active and (now - self.shield_start_time) >= self.shield_duration:
-            self.shield_active = False
+        # Если держим Shift и есть манa — включаем щит и расходуем
+        if shift_pressed and self.mana > 0:
+            self.shield_active = True
+            # тянем ману
+            self.mana -= elapsed * self.mana_drain_per_ms
+            if self.mana <= 0:
+                # манa закончилась
+                self.mana = 0.0
+                self.shield_active = False
+                # если есть алмазы — потребляем 1 и восстанавливаем ману автоматически
+                if self.diamonds > 0:
+                    self.diamonds -= 1
+                    self.mana = 1.0
+                    # сразу начинаем тянуть из вновь заполненной полоски
+                    # уменьшение по оставшемуся elapsed (не критично)
+                    self.mana -= 0  # (можно учесть остаток, но опустим)
+        else:
+            # если Shift отпущен — выключаем щит
+            if not shift_pressed:
+                self.shield_active = False
+            # если манa = 0 и есть алмазы — автоматически заряжаем (один алмаз = одна полная полоса)
+            if self.mana <= 0 and self.diamonds > 0:
+                self.diamonds -= 1
+                self.mana = 1.0
 
-        # при нажатии Shift — активируем защиту (если не на перезарядке)
-        shift_pressed = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
-        if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
-            if not self.shield_active and (now - self.shield_last_used) >= self.shield_cooldown:
-                self.shield_active = True
-                self.shield_start_time = now
-                self.shield_last_used = now
-
-
+        # Ограничения и коректность
+        if self.mana < 0:
+            self.mana = 0.0
+        if self.mana > 1:
+            self.mana = 1.0
 
         # анимация/движение
         current_img = self.sprites["idle"]

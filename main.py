@@ -476,6 +476,26 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                     screen.blit(tile, (x * TILE_SIZE + camera.offset_x, y * TILE_SIZE + camera.offset_y))
 
         # HUD
+
+        # Полоска маны (щита)
+        mana_bar_x = 10
+        mana_bar_y = 140
+        mana_bar_width = 200
+        mana_bar_height = 18
+        # фон
+        pygame.draw.rect(screen, (40, 40, 40), (mana_bar_x, mana_bar_y, mana_bar_width, mana_bar_height))
+        # заполнение
+        mana_filled = int(mana_bar_width * max(0.0, min(1.0, player.mana)))
+        pygame.draw.rect(screen, (80, 170, 255), (mana_bar_x, mana_bar_y, mana_filled, mana_bar_height))
+        # рамка
+        pygame.draw.rect(screen, (200, 200, 200), (mana_bar_x, mana_bar_y, mana_bar_width, mana_bar_height), 2)
+        # подпись
+        font_small = pygame.font.Font(None, 24)
+        status = "Shield: ON" if player.shield_active else "Shield: OFF"
+        mana_text = font_small.render(f"{status}  ({player.diamonds} diamonds)", True, (180, 220, 255))
+        screen.blit(mana_text, (mana_bar_x, mana_bar_y - 22))
+
+
         for i in range(player.hp):
             screen.blit(tile_heart, (10 + i * 40, 10))
 
