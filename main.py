@@ -75,26 +75,23 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     
     tmx_data, tiles, traps, platforms, enemy_objs = load_map(level_file)
 
-    collectibles = []  # элементы: {"type":"coin"/"diamond","rect":Rect,"gid":gid,"value":int,"draw":(x,y)}
+    collectibles = []  # элементы: {"type":"coin"/"diamond"/"medkit","rect":Rect,"gid":gid,"value":int,"draw":(x,y)}
     for layer in tmx_data.visible_layers:
         if isinstance(layer, pytmx.TiledObjectGroup):
             lname = (getattr(layer, "name", "") or "").lower()
-            if lname == "collectibles":
+            if lname in ("collectibles", "pickups"):
                 for obj in layer:
                     oname = (getattr(obj, "name", "") or "").lower()
-                    if oname in ("coin", "diamond"):
+                    if oname in ("coin", "diamond", "medkit"):
                         obj_w = int(obj.width) if getattr(obj, "width", None) else TILE_SIZE
                         obj_h = int(obj.height) if getattr(obj, "height", None) else TILE_SIZE
-                        # rect для коллизии (top-left)
                         rect_x = int(obj.x)
-                        rect_y = int(obj.y) - obj_h
+                        rect_y = int(obj.y) - obj_h  # корректировка для tile-объекта
                         rect = pygame.Rect(rect_x, rect_y, obj_w, obj_h)
                         props = getattr(obj, "properties", {}) or {}
-                        # default value = 1 для всех (если нужно другое — задайте свойство value в Tiled)
-                        value = int(props.get("value", 1))
+                        value = int(props.get("value", 1)) if oname != "medkit" else 1
                         gid = getattr(obj, "gid", None)
 
-                        # рассчитываем корректную позицию для отрисовки аналогично общим tile-объектам
                         draw_x = rect_x
                         draw_y = rect_y
                         if gid:
@@ -112,7 +109,6 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                             "value": value,
                             "draw": (draw_x, draw_y)
                         })
-    print(f"Collectibles on map: {len(collectibles)}")
 
 
     # --- Сбор портала выхода ---
@@ -331,9 +327,17 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                 if c["type"] == "coin":
                     player.coins += c["value"]
                     PICKUP_SOUND.play()
-                else:
+                elif c["type"] == "diamond":
                     player.diamonds += c["value"]
                     PICKUP_SOUND.play()
+                elif c["type"] == "medkit":
+                    HEAL_SOUND.play()
+                    # восстановление 1 HP (с учётом max_hp, если есть)
+                    max_hp = getattr(player, "max_hp", None)
+                    if max_hp is None:
+                        # если нет max_hp, ограничим максимум любым числом (например 10)
+                        max_hp = 10
+                    player.hp = min(player.hp + 1, max_hp)
                 try:
                     collectibles.remove(c)
                 except ValueError:
@@ -414,7 +418,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                             continue
 
                         # Пропускаем отрисовку коллектиблов — будем рисовать их через список collectibles
-                        if layer_name == "collectibles" and obj_name in ("coin", "diamond"):
+                        if layer_name == "collectibles" and obj_name in ("coin", "diamond", "medkit"):
                             continue
 
                         img = tmx_data.get_tile_image_by_gid(gid)
