@@ -124,7 +124,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                         int(obj.width) if obj.width else TILE_SIZE, 
                         int(obj.height) if obj.height else TILE_SIZE
                     )
-                    print(f"Портал найден на уровне {current_level + 1}: {exit_portal}")
+                    #print(f"Портал найден на уровне {current_level + 1}: {exit_portal}")
                     break
             if exit_portal:
                 break
@@ -183,19 +183,19 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
             ey = eo["y"] - TILE_SIZE
             enemies.append(Virus(ex, ey, virus_sprites, hp=hp_val))
         elif name == "boss":
-            print("Босс создан!")
+            #print("Босс создан!")
             ex = eo["x"]
             ey = eo["y"] - 256
             boss = Boss(ex, ey, boss_sprites, hp=hp_val)
 #
-    print(f"Создано врагов: {len(enemies)} (бактерий: {sum(1 for e in enemies if isinstance(e, Bacteria))}, вирусов: {sum(1 for e in enemies if isinstance(e, Virus))}), боссов: {1 if boss else 0})")
-    print(f"Объекты врагов из карты: {enemy_objs}")
+    #print(f"Создано врагов: {len(enemies)} (бактерий: {sum(1 for e in enemies if isinstance(e, Bacteria))}, вирусов: {sum(1 for e in enemies if isinstance(e, Virus))}), боссов: {1 if boss else 0})")
+    #print(f"Объекты врагов из карты: {enemy_objs}")
 
     # список снарядов (врагов)
     enemy_projectiles = []
     player_projectiles = []
 
-    print(f"Уровень {current_level + 1}/{len(LEVELS)}")
+    #print(f"Уровень {current_level + 1}/{len(LEVELS)}")
 
     running = True
     level_complete = False
@@ -380,11 +380,11 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         if exit_portal and player.hitbox.colliderect(exit_portal):
             level_complete = True
             LEVEL_COMPLETE_SOUND.play()
-            print(f"Уровень {current_level + 1} завершён! Переход на уровень {current_level + 2}...")
+            #print(f"Уровень {current_level + 1} завершён! Переход на уровень {current_level + 2}...")
 
         # 6. Проверяем смерть
         if player.hp <= 0:
-            print("Игрок погиб! Перезагрузка уровня 1...")
+            #print("Игрок погиб! Перезагрузка уровня 1...")
             main(0, 0, 0)  # Возвращаемся на первый уровень
             return
 

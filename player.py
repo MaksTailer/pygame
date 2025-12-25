@@ -92,12 +92,12 @@ class Player(pygame.sprite.Sprite):
         # анимация/движение
         current_img = self.sprites["idle"]
         if keys[pygame.K_a]:
-            print("AAAAAAA")
+            #print("AAAAAAA")
             dx = -base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = False
         elif keys[pygame.K_d]:
-            print("DDDDDDdd")
+            #print("DDDDDDdd")
             dx = base_speed
             current_img = self.sprites["walk1"] if pygame.time.get_ticks() // 200 % 2 == 0 else self.sprites["walk2"]
             self.facing_right = True
@@ -182,7 +182,7 @@ class Player(pygame.sprite.Sprite):
                         self.last_hit_time = now
                         if self.hp <= 0:
                             try:
-                                restart_game()
+                                self.hp=0
                             except NameError:
                                 pygame.event.post(pygame.event.Event(pygame.QUIT))
 
@@ -194,7 +194,7 @@ class Player(pygame.sprite.Sprite):
                 elif now - self.fall_start_time > 3000:
                     self.hp = 0
                     try:
-                        restart_game()
+                        self.hp=0
                     except NameError:
                         pygame.event.post(pygame.event.Event(pygame.QUIT))
             else:
