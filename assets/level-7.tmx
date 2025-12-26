@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="14" nextobjectid="27">
  <tileset firstgid="1" source="ground.tsx"/>
- <tileset firstgid="325" source="../../../Документы/Tilesets/ground.tsx"/>
+ <tileset firstgid="325" source="ground.tsx"/>
  <layer id="5" name="Decor" width="64" height="12">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
