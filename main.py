@@ -73,7 +73,16 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     background = pygame.image.load(bg_path).convert()
     background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
     
-    tmx_data, tiles, traps, platforms, enemy_objs = load_map(level_file)
+    tmx_data, tiles, traps, platforms, enemy_objs, exit_rect = load_map(level_file)
+
+    # === Переменные для квиза ===
+    quiz_active = False
+    quiz_question = None
+    quiz_buttons = []  # кнопки для выбора ответа
+    quiz_correct_idx = -1
+
+
+    
 
     collectibles = []  # элементы: {"type":"coin"/"diamond"/"medkit","rect":Rect,"gid":gid,"value":int,"draw":(x,y)}
     for layer in tmx_data.visible_layers:
@@ -201,7 +210,52 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     level_complete = False
     
     while running and not level_complete:
+        
         dt = 1
+
+        if quiz_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mx, my = event.pos
+                    for btn in quiz_buttons:
+                        if btn["rect"].collidepoint(mx, my):
+                            # проверяем ответ
+                            if btn["index"] == quiz_correct_idx:
+                                # верный ответ — переходим на следующий уровень
+                                LEVEL_COMPLETE_SOUND.play()
+                                main(current_level + 1, player.coins, player.diamonds)
+                                return
+                            else:
+                                # неверный ответ — отнимаем 1 hp
+                                player.hp -= 1
+                                quiz_active = False
+                                quiz_question = None
+                            break
+        else:
+            # --- ОБЫЧНАЯ ОБРАБОТКА СОБЫТИЙ (когда квиза нет) ---
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and player.coins > 0:
+                    # мировые координаты мыши
+                    player.coins -= 1  # стрельба стоит 1 монету
+                    mx, my = event.pos
+                    world_x = mx - camera.offset_x
+                    world_y = my - camera.offset_y
+                    px = player.hitbox.centerx
+                    py = player.hitbox.centery
+                    vec = pygame.Vector2(world_x - px, world_y - py)
+                    if vec.length() == 0:
+                        vec = pygame.Vector2(1, 0)
+                    vec = vec.normalize()
+                    speed = 8.0
+                    vx = vec.x * speed
+                    vy = vec.y * speed
+                    p = Projectile(px, py, vx, vy, color=(255,220,80), life=3000, image=proj_img1)
+                    player_projectiles.append(p)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -377,11 +431,27 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                 player.rect = player.image.get_rect(midbottom=player.hitbox.midbottom)
 
         # 5. Проверяем выход из уровня
-        if exit_portal and player.hitbox.colliderect(exit_portal):
-            level_complete = True
-            LEVEL_COMPLETE_SOUND.play()
-            #print(f"Уровень {current_level + 1} завершён! Переход на уровень {current_level + 2}...")
-
+        # Проверка столкновения с Exit (если не в квизе)
+        if exit_portal and not quiz_active:
+            if player.hitbox.colliderect(exit_portal):
+                # активируем квиз
+                quiz_active = True
+                # берём вопрос уровня
+                if current_level < len(LEVEL_QUIZ):
+                    quiz_question = LEVEL_QUIZ[current_level]
+                    quiz_correct_idx = quiz_question.get("correct", -1)
+                    # создаём кнопки для ответов
+                    quiz_buttons = []
+                    btn_width = 300
+                    btn_height = 60
+                    btn_x = SCREEN_WIDTH // 2 - btn_width // 2
+                    for i, answer in enumerate(quiz_question.get("answers", [])):
+                        btn_y = 350 + i * 80
+                        quiz_buttons.append({
+                            "rect": pygame.Rect(btn_x, btn_y, btn_width, btn_height),
+                            "text": answer,
+                            "index": i
+                        })
         # 6. Проверяем смерть
         if player.hp <= 0:
             #print("Игрок погиб! Перезагрузка уровня 1...")
@@ -510,6 +580,42 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         font = pygame.font.Font(None, 36)
         level_text = font.render(f"Уровень {current_level + 1}/{len(LEVELS)}", True, (255, 255, 255))
         screen.blit(level_text, (SCREEN_WIDTH - 300, 10))
+
+        # === ОТРИСОВКА КВИЗА ===
+        if quiz_active and quiz_question:
+            # полупрозрачная подложка
+            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            overlay.set_alpha(200)
+            overlay.fill((0, 0, 0))
+            screen.blit(overlay, (0, 0))
+            
+            # заголовок
+            font_title = pygame.font.Font(None, 48)
+            title = font_title.render(f"Уровень: {quiz_question.get('level', 'Unknown')}", True, (255, 255, 0))
+            screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
+            
+            # вопрос
+            font_q = pygame.font.Font(None, 36)
+            question_lines = []
+            q_text = quiz_question.get("question", "")
+            for line in q_text.split("\n"):
+                question_lines.append(font_q.render(line, True, (255, 255, 255)))
+            
+            q_y = 150
+            for line in question_lines:
+                screen.blit(line, (SCREEN_WIDTH // 2 - line.get_width() // 2, q_y))
+                q_y += 40
+            
+            # кнопки ответов
+            font_btn = pygame.font.Font(None, 28)
+            for btn in quiz_buttons:
+                color = (0, 200, 0) if btn["rect"].collidepoint(pygame.mouse.get_pos()) else (100, 100, 200)
+                pygame.draw.rect(screen, color, btn["rect"])
+                pygame.draw.rect(screen, (255, 255, 255), btn["rect"], 3)
+                
+                btn_text = font_btn.render(btn["text"], True, (255, 255, 255))
+                screen.blit(btn_text, (btn["rect"].centerx - btn_text.get_width() // 2,  btn["rect"].centery - btn_text.get_height() // 2))
+
 
         pygame.display.flip()
         clock.tick(FPS)

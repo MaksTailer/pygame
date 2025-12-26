@@ -10,6 +10,7 @@ def load_map(filename):
     platforms = []
     enemies = []  # список объектов врагов (словарь с полями name,x,y)
 
+    exit_rect = None
     for layer in tmx_data.visible_layers:
         if isinstance(layer, pytmx.TiledTileLayer):
             for x, y, gid in layer:
@@ -46,6 +47,10 @@ def load_map(filename):
                 elif oname_lower == "boss":
                     enemies.append({"name":"Boss","x":int(obj.x),"y":int(obj.y), "hp": hp_prop})
 
+                if oname_lower == "exit":
+                    exit_rect = pygame.Rect(int(obj.x), int(obj.y), 
+                                            int(obj.width) if getattr(obj, "width", None) else TILE_SIZE,
+                                            int(obj.height) if getattr(obj, "height", None) else TILE_SIZE)
                 # --- Платформы: более надёжное определение/корректное позиционирование ---
                 obj_type = (getattr(obj, "type", None) or "").lower()
                 layer_name = getattr(layer, "name", "") or ""
@@ -90,4 +95,4 @@ def load_map(filename):
                         distance = TILE_SIZE
 
                     platforms.append(MovingPlatform(rect, direction, speed, distance, image=image, name=oname))
-    return tmx_data, tiles, traps, platforms, enemies
+    return tmx_data, tiles, traps, platforms, enemies, exit_rect
