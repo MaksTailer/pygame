@@ -1,7 +1,6 @@
 import pygame
 from constants import *
 
-
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, map_height, sprites):
         super().__init__()
@@ -11,7 +10,7 @@ class Player(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
         self.vel_y = 0
         self.on_ground = False
-        self.hp = 10
+        self.hp = 12
         self.facing_right = True
         self.last_hit_time = 0
         self.invincible_delay = 1000

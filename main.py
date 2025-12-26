@@ -501,14 +501,14 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
 
          # Счётчики коллектиблов
         font = pygame.font.Font(None, 36)
-        coin_text = font.render(f"Coins: {player.coins}", True, (255, 215, 0))
-        diamond_text = font.render(f"Diamonds: {player.diamonds}", True, (0, 200, 255))
+        coin_text = font.render(f"Антитела: {player.coins}", True, (255, 215, 0))
+        diamond_text = font.render(f"Имунитет: {player.diamonds}", True, (0, 200, 255))
         screen.blit(coin_text, (10, 60))
         screen.blit(diamond_text, (10, 100))
         
         # Номер уровня
         font = pygame.font.Font(None, 36)
-        level_text = font.render(f"Level {current_level + 1}/{len(LEVELS)}", True, (255, 255, 255))
+        level_text = font.render(f"Уровень {current_level + 1}/{len(LEVELS)}", True, (255, 255, 255))
         screen.blit(level_text, (SCREEN_WIDTH - 300, 10))
 
         pygame.display.flip()

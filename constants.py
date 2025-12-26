@@ -25,11 +25,11 @@ BACKGROUNDS = [
     "assets/background-3.png",
     "assets/background-4.png",
     "assets/background-4.png",
-    "assets/background-4.png",
-    "assets/background-4.png",
-    "assets/background-4.png",
-    "assets/background-4.png",
-    "assets/background-4.png"
+    "assets/background-5.png",
+    "assets/background-6.png",
+    "assets/background-7.png",
+    "assets/background-8.png",
+    "assets/background-9.png"
 ]
 FON_MUSIC=[
     "assets/music/l1.mp3",

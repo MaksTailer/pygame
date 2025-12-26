@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="11" nextobjectid="1">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="13" nextobjectid="31">
  <tileset firstgid="1" source="ground.tsx"/>
+ <tileset firstgid="325" source="../../../Документы/Tilesets/ground.tsx"/>
  <layer id="5" name="Decor" width="64" height="12">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -21,16 +22,16 @@
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,422,404,0,0,0,0,0,0,0,0,0,0,0,458,440,440,386,0,0,0,0,0,0,0,0,0,0,422,440,440,404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,116,116,116,116,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,116,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,116,116,80,0,0,0,0,0,0,0,0,0,260,242,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,116,116,116,80,0,98,80,0,0,0,0,0,0,0,0,0,0,0,0,0,314,296,0,0,0,0,0,0,0,0,241,0,0,98,116,116,0,0,0,116,116,116,80,
-98,116,116,116,116,116,116,116,116,116,80,0,98,116,0,0,0,0,116,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,63,63,63,63,63,63,63,63,63,27,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,584,566,0,0,0,0,0,0,0,0,0,0,584,602,602,602,602,566,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,584,602,602,602,602,602,602,566,0,0,0,0,0,0,0,0,0,0,584,333,333,566,0,0,0,0,0,0,0,0,584,333,333,333,333,333,333,566,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+584,602,602,602,602,602,602,602,333,333,333,333,333,333,333,333,602,602,602,602,602,602,602,602,602,602,333,333,333,333,602,602,602,602,602,602,602,602,333,333,333,333,333,333,333,333,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,566,
+369,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,351
 </data>
  </layer>
  <layer id="7" name="Sand" width="64" height="12">
@@ -44,11 +45,146 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28,28,28,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,28,28,28,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="11" name="Enemies">
+  <object id="1" name="Boss" x="3793" y="246.333" width="256" height="256">
+   <properties>
+    <property name="Name" value="Boss"/>
+    <property name="hp" type="int" value="100"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="12" name="Collectibles">
+  <object id="6" name="Coin" gid="425" x="1536.12" y="616.242" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="7" name="Coin" gid="425" x="1425.58" y="622.545" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="8" name="Coin" gid="425" x="1100" y="116" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="9" name="Coin" gid="425" x="1248" y="113.333" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="10" name="Coin" gid="425" x="1997.33" y="130.667" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="11" name="Coin" gid="425" x="2065.33" y="125.333" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="12" name="Coin" gid="425" x="2136" y="126.667" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="13" name="Coin" gid="425" x="402" y="657.667" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="14" name="Coin" gid="425" x="332.667" y="122" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="15" name="Coin" gid="425" x="925.576" y="574.061" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="16" name="Coin" gid="425" x="3517.58" y="633.939" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="17" name="Coin" gid="425" x="3264.97" y="637.697" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="18" name="Coin" gid="425" x="2622.55" y="492.242" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="19" name="Coin" gid="425" x="1946.79" y="613.455" width="64" height="64">
+   <properties>
+    <property name="Name" value="Coin"/>
+   </properties>
+  </object>
+  <object id="20" name="Medkit" gid="486" x="1179.7" y="112.091" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="21" name="Medkit" gid="486" x="262" y="121" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="22" name="Medkit" gid="486" x="2201" y="114" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="23" name="Medkit" gid="486" x="2310" y="616" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="24" name="Medkit" gid="486" x="1180" y="618" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="25" name="Medkit" gid="486" x="3155.88" y="622.545" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="26" name="Medkit" gid="486" x="2895.27" y="549.818" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="27" name="Medkit" gid="486" x="1886.79" y="118.788" width="64" height="64">
+   <properties>
+    <property name="Name" value="medkit"/>
+   </properties>
+  </object>
+  <object id="28" name="Diamond" gid="105" x="688" y="564" width="64" height="64">
+   <properties>
+    <property name="Name" value="Diamond"/>
+   </properties>
+  </object>
+  <object id="29" name="Diamond" gid="105" x="460" y="120" width="64" height="64">
+   <properties>
+    <property name="Name" value="Diamond"/>
+   </properties>
+  </object>
+  <object id="30" name="Diamond" gid="105" x="2720" y="496" width="64" height="64">
+   <properties>
+    <property name="Name" value="Diamond"/>
+   </properties>
+  </object>
+ </objectgroup>
  <layer id="8" name="Water" width="64" height="12">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -60,7 +196,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,73,73,73,73,73,73,73,73,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
@@ -81,5 +217,38 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="10" name="MovingPlatforms"/>
+ <objectgroup id="10" name="MovingPlatforms">
+  <object id="2" name="Platform" gid="406" x="2310.67" y="185.333" width="64" height="64">
+   <properties>
+    <property name="direction" value="vertical"/>
+    <property name="distance" type="int" value="490"/>
+    <property name="platform_type" value="platform"/>
+    <property name="speed" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="3" name="Platform" gid="548" x="1892" y="208" width="64" height="64">
+   <properties>
+    <property name="direction" value="vertical"/>
+    <property name="distance" type="int" value="320"/>
+    <property name="platform_type" value="platform"/>
+    <property name="speed" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="4" name="Platform" gid="548" x="1360" y="218" width="64" height="64">
+   <properties>
+    <property name="direction" value="vertical"/>
+    <property name="distance" type="int" value="320"/>
+    <property name="platform_type" value="platform"/>
+    <property name="speed" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="5" name="Platform" gid="548" x="450" y="218" width="64" height="64">
+   <properties>
+    <property name="direction" value="vertical"/>
+    <property name="distance" type="int" value="320"/>
+    <property name="platform_type" value="platform"/>
+    <property name="speed" type="float" value="2"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>
