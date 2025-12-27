@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="16" nextobjectid="25">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="17" nextobjectid="26">
  <tileset firstgid="1" source="ground.tsx"/>
- <tileset firstgid="325" source="ground.tsx"/>
  <layer id="5" name="Decor" width="64" height="12">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -18,72 +17,79 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="16" name="Info">
+  <object id="25" gid="245" x="1357" y="320" width="64" height="64">
+   <properties>
+    <property name="text" value="Сердце — это мышечный насос. Оно перекачивает кровь по всему организму. Сердце работает непрерывно на протяжении всей жизни."/>
+   </properties>
+  </object>
+ </objectgroup>
  <layer id="6" name="Ground" width="64" height="12">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,422,440,440,440,440,440,404,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,584,602,602,602,602,566,0,0,0,0,0,584,602,566,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,369,387,387,387,387,351,548,0,0,0,584,333,333,333,602,602,602,602,602,602,602,602,566,0,565,0,565,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,422,440,440,386,0,0,458,440,440,440,440,386,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,584,333,333,333,333,333,333,333,333,333,333,333,333,620,0,583,0,583,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,584,333,333,333,333,333,333,333,333,333,333,333,333,333,620,0,583,0,583,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,584,602,602,602,602,602,602,602,333,333,333,333,333,333,333,333,333,333,333,333,333,333,620,0,583,0,583,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,565,0,0,584,566,0,0,0,0,
-584,602,602,602,602,602,602,602,602,602,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,333,620,0,583,0,583,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,422,404,638,602,602,333,620,0,0,0,0,
-369,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,351,0,601,0,601,0,0,0,0,422,404,0,0,405,0,405,0,0,422,404,0,0,0,369,387,387,387,351,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,116,116,116,116,116,80,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,260,278,278,278,278,242,0,0,0,0,0,260,278,242,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,45,63,63,63,63,27,224,0,0,0,260,9,9,9,278,278,278,278,278,278,278,278,242,0,241,0,241,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,116,116,62,0,0,134,116,116,116,116,62,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,260,9,9,9,9,9,9,9,9,9,9,9,9,296,0,259,0,259,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,260,9,9,9,9,9,9,9,9,9,9,9,9,9,296,0,259,0,259,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,260,278,278,278,278,278,278,278,9,9,9,9,9,9,9,9,9,9,9,9,9,9,296,0,259,0,259,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,241,0,0,260,242,0,0,0,0,
+260,278,278,278,278,278,278,278,278,278,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,296,0,259,0,259,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98,80,314,278,278,9,296,0,0,0,0,
+45,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,27,0,277,0,277,0,0,0,0,98,80,0,0,81,0,81,0,0,98,80,0,0,0,45,63,63,63,27,0,0,0,0
 </data>
  </layer>
  <objectgroup id="12" name="Exit">
-  <object id="5" gid="340" x="4006.67" y="384.667" width="64" height="64"/>
+  <object id="5" gid="16" x="4006.67" y="384.667" width="64" height="64"/>
  </objectgroup>
  <objectgroup id="13" name="Collectibles">
-  <object id="6" name="Coin" gid="425" x="3775" y="381" width="64" height="64">
+  <object id="6" name="Coin" gid="101" x="3775" y="381" width="64" height="64">
    <properties>
     <property name="Name" value="Coin"/>
    </properties>
   </object>
-  <object id="7" name="Coin" gid="425" x="3414.67" y="370.667" width="64" height="64">
+  <object id="7" name="Coin" gid="101" x="3414.67" y="370.667" width="64" height="64">
    <properties>
     <property name="Name" value="Coin"/>
    </properties>
   </object>
-  <object id="8" name="Coin" gid="425" x="2620" y="692" width="64" height="64">
+  <object id="8" name="Coin" gid="101" x="2620" y="692" width="64" height="64">
    <properties>
     <property name="Name" value="Coin"/>
    </properties>
   </object>
-  <object id="9" name="Coin" gid="425" x="1868" y="366" width="64" height="64">
+  <object id="9" name="Coin" gid="101" x="1868" y="366" width="64" height="64">
    <properties>
     <property name="Name" value="Coin"/>
    </properties>
   </object>
-  <object id="10" name="Coin" gid="425" x="650" y="304" width="64" height="64">
+  <object id="10" name="Coin" gid="101" x="650" y="304" width="64" height="64">
    <properties>
     <property name="Name" value="Coin"/>
    </properties>
   </object>
-  <object id="12" name="Medkit" gid="486" x="2689" y="693" width="64" height="64">
+  <object id="12" name="Medkit" gid="162" x="2689" y="693" width="64" height="64">
    <properties>
     <property name="Name" value="medkit"/>
    </properties>
   </object>
-  <object id="13" name="Medkit" gid="486" x="3078" y="242" width="64" height="64">
+  <object id="13" name="Medkit" gid="162" x="3078" y="242" width="64" height="64">
    <properties>
     <property name="Name" value="medkit"/>
    </properties>
   </object>
-  <object id="14" name="Medkit" gid="486" x="709" y="311" width="64" height="64">
+  <object id="14" name="Medkit" gid="162" x="709" y="311" width="64" height="64">
    <properties>
     <property name="Name" value="medkit"/>
    </properties>
   </object>
-  <object id="15" name="Medkit" gid="486" x="1472" y="308" width="64" height="64">
+  <object id="15" name="Medkit" gid="162" x="1472" y="308" width="64" height="64">
    <properties>
     <property name="Name" value="medkit"/>
    </properties>
   </object>
-  <object id="16" name="Medkit" gid="486" x="2176" y="370" width="64" height="64">
+  <object id="16" name="Medkit" gid="162" x="2176" y="370" width="64" height="64">
    <properties>
     <property name="Name" value="medkit"/>
    </properties>
@@ -95,7 +101,7 @@
   </object>
  </objectgroup>
  <objectgroup id="11" name="MovingPlatforms">
-  <object id="1" name="Platform" gid="548" x="2433.33" y="452" width="64" height="64">
+  <object id="1" name="Platform" gid="224" x="2433.33" y="452" width="64" height="64">
    <properties>
     <property name="direction" value="vertical"/>
     <property name="distance" type="int" value="490"/>
@@ -103,7 +109,7 @@
     <property name="speed" type="float" value="2"/>
    </properties>
   </object>
-  <object id="2" name="Platform" gid="548" x="2560" y="357.333" width="64" height="64">
+  <object id="2" name="Platform" gid="224" x="2560" y="357.333" width="64" height="64">
    <properties>
     <property name="direction" value="vertical"/>
     <property name="distance" type="int" value="490"/>
@@ -111,7 +117,7 @@
     <property name="speed" type="float" value="2"/>
    </properties>
   </object>
-  <object id="3" name="Platform" gid="548" x="2688" y="290.667" width="64" height="64">
+  <object id="3" name="Platform" gid="224" x="2688" y="290.667" width="64" height="64">
    <properties>
     <property name="direction" value="vertical"/>
     <property name="distance" type="int" value="490"/>
@@ -119,7 +125,7 @@
     <property name="speed" type="float" value="2"/>
    </properties>
   </object>
-  <object id="4" name="Platform" gid="548" x="3613.67" y="387.667" width="64" height="64">
+  <object id="4" name="Platform" gid="224" x="3613.67" y="387.667" width="64" height="64">
    <properties>
     <property name="direction" value="vertical"/>
     <property name="distance" type="int" value="400"/>

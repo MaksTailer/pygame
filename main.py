@@ -26,8 +26,13 @@ clock = pygame.time.Clock()
 # === Загрузка ассетов ===
 background = pygame.image.load("assets/background-1.png").convert()
 background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
-character_sheet = pygame.image.load("assets/person.png").convert_alpha()
-character_shift = pygame.image.load("assets/umbrella.png").convert_alpha()
+character_sheet1 = pygame.image.load("assets/character/1.png").convert_alpha()
+character_sheet2 = pygame.image.load("assets/character/2.png").convert_alpha()
+character_sheet3 = pygame.image.load("assets/character/3.png").convert_alpha()
+character_sheet4 = pygame.image.load("assets/character/4.png").convert_alpha()
+character_sheet5 = pygame.image.load("assets/character/5.png").convert_alpha()
+
+
 ground = pygame.image.load("assets/ground.png").convert_alpha()
 enemy_sheet = pygame.image.load("assets/enemies.png").convert_alpha()
 shot_sheet = pygame.image.load("assets/fire.png").convert_alpha()
@@ -41,11 +46,11 @@ def get_sprite(sheet, x, y, w, h):
 
 # === Спрайты персонажа ===
 player_sprites = {
-    "walk1": get_sprite(character_sheet, 0, 1, CHAR_SIZE, CHAR_SIZE),
-    "walk2": get_sprite(character_sheet, 0, 2, CHAR_SIZE, CHAR_SIZE),
-    "jump": get_sprite(character_sheet, 0, 3, CHAR_SIZE, CHAR_SIZE),
-    "idle": get_sprite(character_sheet, 0, 0, CHAR_SIZE, CHAR_SIZE),
-    "shift": get_sprite(character_shift , 0, 0, CHAR_SIZE, CHAR_SIZE)
+    "walk1": get_sprite(character_sheet2, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "walk2": get_sprite(character_sheet3, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "jump": get_sprite(character_sheet4, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "idle": get_sprite(character_sheet1, 0, 0, CHAR_SIZE, CHAR_SIZE),
+    "shift": get_sprite(character_sheet5, 0, 0, CHAR_SIZE, CHAR_SIZE)
 }
 # === Спрайты босса ===
 boss_sprites = {
@@ -348,6 +353,9 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                     died = boss.damage(getattr(player, "projectile_damage", 1))
                     if died:
                         boss = None
+                        LEVEL_COMPLETE_SOUND.play()
+                        main(current_level + 1, player.coins, player.diamonds)
+                        return
                 except Exception:
                     pass
                 hit_any = True
@@ -499,7 +507,7 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
         # 6. Проверяем смерть
         if player.hp <= 0:
             #print("Игрок погиб! Перезагрузка уровня 1...")
-            main(0, 0, 0)  # Возвращаемся на первый уровень
+            main(current_level, player.coins, player.diamonds)
             return
 
         camera.update(player)

@@ -24,12 +24,12 @@ BACKGROUNDS = [
     "assets/background-2.png",
     "assets/background-3.png",
     "assets/background-4.png",
-    "assets/background-4.png",
     "assets/background-5.png",
     "assets/background-6.png",
     "assets/background-7.png",
     "assets/background-8.png",
-    "assets/background-9.png"
+    "assets/background-9.png",
+    "assets/background-10.png"
 ]
 FON_MUSIC=[
     "assets/music/l1.mp3",
@@ -40,7 +40,8 @@ FON_MUSIC=[
     "assets/music/l6.mp3",
     "assets/music/l7.mp3",
     "assets/music/l8.mp3",
-    "assets/music/l9.mp3"
+    "assets/music/l9.mp3",
+    "assets/music/l10.mp3"
 ]
 CURRENT_LEVEL = 0
 
