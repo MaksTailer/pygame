@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="17" nextobjectid="34">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="64" tileheight="64" infinite="0" nextlayerid="18" nextobjectid="35">
  <tileset firstgid="1" source="ground.tsx"/>
  <layer id="5" name="Decor" width="64" height="12">
   <data encoding="csv">
@@ -86,13 +86,20 @@
 </data>
  </layer>
  <objectgroup id="10" name="MovingPlatforms"/>
+ <objectgroup id="17" name="Info">
+  <object id="34" name="Tablet" gid="245" x="1184" y="641" width="64" height="64">
+   <properties>
+    <property name="text" value="Ротовая полость — начало пищеварительной системы. Здесь пища измельчается зубами и смачивается слюной. Слюна содержит ферменты, которые начинают расщеплять углеводы. Во рту также обитает множество бактерий."/>
+   </properties>
+  </object>
+ </objectgroup>
  <objectgroup id="15" name="Collectibles">
   <object id="19" name="Diamond" gid="105" x="2624" y="320" width="64" height="64">
    <properties>
     <property name="Name" value="Diamond"/>
    </properties>
   </object>
-  <object id="29" name="Coin" gid="101" x="1137.33" y="629.333" width="64" height="64">
+  <object id="29" name="Coin" gid="101" x="1282.33" y="568.333" width="64" height="64">
    <properties>
     <property name="Name" value="Coin"/>
    </properties>
@@ -107,8 +114,5 @@
     <property name="Name" value="medkit"/>
    </properties>
   </object>
- </objectgroup>
- <objectgroup id="16" name="Info">
-  <object id="33" name="Tablet" gid="245" x="2718.67" y="322.667" width="64" height="64"/>
  </objectgroup>
 </map>

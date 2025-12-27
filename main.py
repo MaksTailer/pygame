@@ -81,7 +81,25 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
     quiz_buttons = []  # кнопки для выбора ответа
     quiz_correct_idx = -1
 
+    # === Info (таблички) ===
+    info_objects = []  # список: {"rect": Rect, "text": str}
+    for layer in tmx_data.visible_layers:
+        if isinstance(layer, pytmx.TiledObjectGroup) and (getattr(layer, "name", "") or "").lower() == "info":
+            for obj in layer:
+                text = ""
+                props = getattr(obj, "properties", {}) or {}
+                # в Tiled вы добавили property "text"
+                text = props.get("text", "") or props.get("Text", "") or ""
+                obj_w = int(getattr(obj, "width", TILE_SIZE))
+                obj_h = int(getattr(obj, "height", TILE_SIZE))
+                rect_x = int(obj.x)
+                rect_y = int(obj.y) - obj_h  # корректировка для tile-object
+                r = pygame.Rect(rect_x, rect_y, obj_w, obj_h)
+                info_objects.append({"rect": r, "text": text})
 
+    # Info window state
+    info_active = False
+    info_text = ""
     
 
     collectibles = []  # элементы: {"type":"coin"/"diamond"/"medkit","rect":Rect,"gid":gid,"value":int,"draw":(x,y)}
@@ -233,6 +251,9 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                                 quiz_active = False
                                 quiz_question = None
                             break
+        
+
+
         else:
             # --- ОБЫЧНАЯ ОБРАБОТКА СОБЫТИЙ (когда квиза нет) ---
             for event in pygame.event.get():
@@ -255,6 +276,29 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                     vy = vec.y * speed
                     p = Projectile(px, py, vx, vy, color=(255,220,80), life=3000, image=proj_img1)
                     player_projectiles.append(p)
+                
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                    # переключение окна информации, если рядом с любой табличкой
+                    print(22)
+                    toggled = False
+                    for info in info_objects:
+                        # расширяем область для удобства взаимодействия
+                        if player.hitbox.colliderect(info["rect"].inflate(24, 24)):
+                            # если уже открыто — закрыть; иначе открыть с текстом из объекта
+                            if info_active and info_text == info["text"]:
+                                info_active = False
+                                info_text = ""
+                            else:
+                                info_active = True
+                                info_text = info["text"] or ""
+                            toggled = True
+                            break
+                    # если не рядом с табличкой и окно открыто — закрыть
+                    if not toggled and info_active:
+                        info_active = False
+                        info_text = ""
+
+            
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -615,6 +659,39 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
                 
                 btn_text = font_btn.render(btn["text"], True, (255, 255, 255))
                 screen.blit(btn_text, (btn["rect"].centerx - btn_text.get_width() // 2,  btn["rect"].centery - btn_text.get_height() // 2))
+
+
+        if info_active and info_text:
+            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            overlay.set_alpha(200)
+            overlay.fill((0, 0, 0))
+            screen.blit(overlay, (0, 0))
+            # рамка
+            box_w = SCREEN_WIDTH - 240
+            box_h = SCREEN_HEIGHT - 240
+            box_x = 120
+            box_y = 120
+            pygame.draw.rect(screen, (18, 18, 28), (box_x, box_y, box_w, box_h))
+            pygame.draw.rect(screen, (190, 190, 230), (box_x, box_y, box_w, box_h), 3)
+            # текст с простым переносом
+            font = pygame.font.Font(None, 36)
+            words = info_text.split(" ")
+            line = ""
+            y = box_y + 20
+            max_w = box_w - 40
+            for w in words:
+                test = (line + " " + w).strip()
+                surf = font.render(test, True, (230, 230, 230))
+                if surf.get_width() > max_w and line != "":
+                    screen.blit(font.render(line, True, (230, 230, 230)), (box_x + 20, y))
+                    y += 34
+                    line = w
+                else:
+                    line = test
+            if line:
+                screen.blit(font.render(line, True, (230, 230, 230)), (box_x + 20, y))
+            hint = pygame.font.Font(None, 20).render("Нажмите I чтобы закрыть", True, (180, 180, 180))
+            screen.blit(hint, (box_x + box_w - hint.get_width() - 12, box_y + box_h - 28))
 
 
         pygame.display.flip()
