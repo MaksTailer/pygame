@@ -37,29 +37,56 @@ class Projectile:
 
 
 class Boss:
-    """Босс — большой вирус с усиленной атакой"""
+    """Босс — умный вирус с многофазной атакой и тактикой"""
     def __init__(self, x, y, sprites, hp=None):
         self.hitbox = pygame.Rect(int(x), int(y), 256, 256)
         self.sprites = sprites
         self.image = self.sprites.get("idle1", pygame.Surface((256, 256)))
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
-        self.max_hp = int(hp) if hp is not None else 20
+        self.max_hp = int(hp) if hp is not None else 40  # увеличена сложность
         self.hp = self.max_hp
         self.vel_y = 0
         self.gravity = 0.8
         self.on_ground = False
         self.facing_right = True
 
-        self.shoot_delay = 1400   #  было 500
+        # Фазы боя
+        self.phase = 0  # 0=обычная, 1=агрессивная, 2=берсерк
+        self.phase_hp_thresholds = [1.0, 0.66, 0.33]  # переход на 66% и 33% HP
+        self.phase_change_time = 0
+        
+        # Атака
+        self.shoot_delay = 1200
         self.last_shot = 0
-        self.attack_phase = 0  # 0 = обычная атака, 1 = круговая атака
-        self.phase_time = 0
-        self.phase_duration = 3000  # 3 сек на фазу
+        self.attack_type = 0  # 0=волна, 1=спираль, 2=боковая, 3=прямая
+        self.attack_sequence = 0  # счётчик атак для чередования
+        self.attack_cooldown = 0
+        
+        # Движение и тактика
+        self.move_pattern = 0  # 0=преследование, 1=отступление, 2=боковое движение
+        self.pattern_timer = 0
+        self.pattern_duration = 180  # кадров на один паттерн
+        self.last_player_x = 0
+        self.dodge_cooldown = 0
+        self.jump_charge = 0
 
     def update(self, player, tiles, projectiles):
         now = pygame.time.get_ticks()
         
-        # гравитация + вертикальное движение
+        # === ФАЗЫ ===
+        hp_ratio = self.hp / self.max_hp
+        new_phase = 0
+        if hp_ratio <= 0.33:
+            new_phase = 2  # берсерк (очень опасен)
+        elif hp_ratio <= 0.66:
+            new_phase = 1  # агрессивный
+        
+        if new_phase != self.phase:
+            self.phase = new_phase
+            self.phase_change_time = now
+            self.attack_sequence = 0
+        
+        # === ГРАВИТАЦИЯ И КОЛЛИЗИИ ===
         self.vel_y += self.gravity
         if self.vel_y > 12:
             self.vel_y = 12
@@ -77,20 +104,46 @@ class Boss:
                     self.hitbox.top = t.bottom
                     self.vel_y = 0
         
-        # логика фаз атаки (меняем каждые 3 сек)
-        self.phase_time += 1
-        if self.phase_time > self.phase_duration:
-            self.attack_phase = (self.attack_phase + 1) % 2
-            self.phase_time = 0
-        
-        # движение к игроку (горизонтальное)
+        # === ТАКТИКА ДВИЖЕНИЯ ===
         dx_to_player = player.hitbox.centerx - self.hitbox.centerx
-        if abs(dx_to_player) > 50:
-            move_dir = 1 if dx_to_player > 0 else -1
-            self.hitbox.x += int(move_dir * 1.5)
-            self.facing_right = move_dir > 0
+        dy_to_player = player.hitbox.centery - self.hitbox.centery
+        dist_to_player = abs(dx_to_player)
         
-        # столкновения с тайлами (горизонтальные)
+        self.pattern_timer += 1
+        if self.pattern_timer >= self.pattern_duration:
+            self.pattern_timer = 0
+            # выбираем паттерн в зависимости от фазы
+            if self.phase == 0:
+                self.move_pattern = random.choice([0, 1])  # преследование или отступление
+            elif self.phase == 1:
+                self.move_pattern = random.choice([0, 2])  # преследование или боковое
+            else:  # phase 2 (берсерк)
+                self.move_pattern = 0  # почти всегда преследуем
+        
+        # применяем паттерн движения
+        move_speed = 1.5 + (self.phase * 0.4)  # скорость зависит от фазы
+        
+        if self.move_pattern == 0:
+            # преследование: идём к игроку
+            if dist_to_player > 80:
+                move_dir = 1 if dx_to_player > 0 else -1
+                self.hitbox.x += int(move_dir * move_speed)
+                self.facing_right = move_dir > 0
+        
+        elif self.move_pattern == 1:
+            # отступление: отходим назад (если близко)
+            if dist_to_player < 200:
+                move_dir = 1 if dx_to_player > 0 else -1
+                self.hitbox.x -= int(move_dir * move_speed * 0.8)
+                self.facing_right = move_dir > 0
+        
+        elif self.move_pattern == 2:
+            # боковое движение: ходим взад-вперёд сбоку от игрока
+            side_dir = 1 if self.phase_change_time % 400 < 200 else -1
+            self.hitbox.x += int(side_dir * move_speed * 0.6)
+            self.facing_right = side_dir > 0
+        
+        # избегаем застревания в стенах
         for t in tiles:
             if isinstance(t, pygame.Rect) and t.colliderect(self.hitbox):
                 if dx_to_player > 0:
@@ -98,63 +151,137 @@ class Boss:
                 else:
                     self.hitbox.left = t.right
         
-        # прыжок на игрока
-        if self.on_ground and abs(dx_to_player) < 300:
-            if random.random() < 0.01:  # 1% шанс каждый кадр
-                self.vel_y = -16
+        # умный прыжок (на игрока или уход от атаки)
+        if self.on_ground:
+            should_jump = False
+            if self.phase >= 1 and dist_to_player < 300:
+                # в боевых фазах часто прыгаем для манёвра
+                if random.random() < (0.015 * (self.phase + 1)):
+                    should_jump = True
+            elif self.phase == 0 and random.random() < 0.008:
+                should_jump = True
+            
+            if should_jump:
+                jump_power = -16 if self.phase == 2 else -15
+                self.vel_y = jump_power
                 self.on_ground = False
         
-        # атака (зависит от фазы)
-        if self.attack_phase == 0:
-            # обычная атака: в сторону игрока
-            if now - self.last_shot >= self.shoot_delay:
-                px = self.hitbox.centerx
-                py = self.hitbox.centery
-                vec = pygame.Vector2(player.hitbox.centerx - px, player.hitbox.centery - py)
-                if vec.length() == 0:
-                    vec = pygame.Vector2(1, 0)
-                vec = vec.normalize()
-                # даём боссу мощный, но редкий снаряд — увеличим размер в 4 раза
-                proj_speed = 6
-                proj_size = 8 * 4  # увеличение размера в 4 раза
-                proj = Projectile(px, py, vec.x * proj_speed, vec.y * proj_speed, color=(215, 245, 20), size=proj_size)
-                projectiles.append(proj)
-                self.last_shot = now
-        else:
-            # круговая атака: стреляет во все стороны, реже и чуть медленнее
-            if now - self.last_shot >= int(self.shoot_delay * 1.6):
-                px = self.hitbox.centerx
-                py = self.hitbox.centery
-                num_projectiles = 8
-                for i in range(num_projectiles):
-                    angle = (i / num_projectiles) * 2 * math.pi
-                    vx = math.cos(angle) * 4.5
-                    vy = math.sin(angle) * 4.5
-                    # круговые снаряды чуть меньше, но заметные
-                    proj = Projectile(px, py, vx, vy, color=(200, 50, 200), size=16)
-                    projectiles.append(proj)
-                self.last_shot = now
+        # === АТАКА (фаза-зависимая) ===
+        shoot_delay_base = 1400 - (self.phase * 200)  # чем выше фаза, тем чаще стреляет
         
+        if now - self.last_shot >= shoot_delay_base:
+            self.attack_sequence = (self.attack_sequence + 1) % (3 + self.phase)
+            
+            px = self.hitbox.centerx
+            py = self.hitbox.centery
+            
+            if self.phase == 0:
+                # обычная фаза: чередуем волну и прямую атаку
+                if self.attack_sequence % 2 == 0:
+                    self._shoot_wave(px, py, player, projectiles)
+                else:
+                    self._shoot_direct(px, py, player, projectiles)
+            
+            elif self.phase == 1:
+                # агрессивная фаза: чередуем волну, прямую и боковую
+                if self.attack_sequence % 3 == 0:
+                    self._shoot_wave(px, py, player, projectiles)
+                elif self.attack_sequence % 3 == 1:
+                    self._shoot_direct(px, py, player, projectiles)
+                else:
+                    self._shoot_sides(px, py, projectiles)
+            
+            else:  # phase 2
+                # берсерк: комбо атак — волна + спираль + прямая
+                if self.attack_sequence % 4 == 0:
+                    self._shoot_wave(px, py, player, projectiles)
+                elif self.attack_sequence % 4 == 1:
+                    self._shoot_spiral(px, py, projectiles)
+                elif self.attack_sequence % 4 == 2:
+                    self._shoot_direct(px, py, player, projectiles)
+                else:
+                    self._shoot_sides(px, py, projectiles)
+            
+            self.last_shot = now
+        
+        # визуал
         self.image = self.sprites.get("idle1", self.image)
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
+
+    def _shoot_direct(self, px, py, player, projectiles):
+        """Прямая атака в сторону игрока"""
+        vec = pygame.Vector2(player.hitbox.centerx - px, player.hitbox.centery - py)
+        if vec.length() == 0:
+            vec = pygame.Vector2(1, 0)
+        vec = vec.normalize()
+        speed = 6 + self.phase
+        proj = Projectile(px, py, vec.x * speed, vec.y * speed, 
+                         color=(255, 100 + self.phase * 50, 20), size=8 * 4)
+        projectiles.append(proj)
+
+    def _shoot_wave(self, px, py, player, projectiles):
+        """Волна снарядов"""
+        num_proj = 5 + self.phase * 2
+        for i in range(num_proj):
+            angle = (i / num_proj) * 2 * math.pi
+            vx = math.cos(angle) * (5 + self.phase * 0.5)
+            vy = math.sin(angle) * (5 + self.phase * 0.5)
+            proj = Projectile(px, py, vx, vy, color=(200, 80, 200), size=12)
+            projectiles.append(proj)
+
+    def _shoot_spiral(self, px, py, projectiles):
+        """Спиральная атака"""
+        num_proj = 8
+        time_offset = pygame.time.get_ticks() / 100.0
+        for i in range(num_proj):
+            angle = (i / num_proj) * 2 * math.pi + time_offset
+            vx = math.cos(angle) * 5.5
+            vy = math.sin(angle) * 5.5
+            proj = Projectile(px, py, vx, vy, color=(100, 255, 200), size=14)
+            projectiles.append(proj)
+
+    def _shoot_sides(self, px, py, projectiles):
+        """Боковая атака (слева и справа)"""
+        for side in [-1, 1]:
+            vx = side * 7
+            vy = -2
+            proj = Projectile(px, py, vx, vy, color=(255, 200, 100), size=16)
+            projectiles.append(proj)
 
     def draw(self, surf, offset):
         draw_pos = (self.rect.x + offset[0], self.rect.y + offset[1])
         surf.blit(self.image, draw_pos)
         
-        # рисуем полоску HP над боссом
+        # полоска HP
         bar_width = self.rect.width
-        bar_height = 10
+        bar_height = 12
         bar_x = draw_pos[0]
-        bar_y = draw_pos[1] - 20
-        pygame.draw.rect(surf, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+        bar_y = draw_pos[1] - 25
+        
+        # фон
+        pygame.draw.rect(surf, (80, 20, 20), (bar_x, bar_y, bar_width, bar_height))
+        
+        # цвет в зависимости от фазы
+        if self.phase == 0:
+            color = (0, 200, 0)
+        elif self.phase == 1:
+            color = (255, 150, 0)
+        else:
+            color = (255, 0, 0)
+        
         hp_ratio = max(0, self.hp / self.max_hp)
-        pygame.draw.rect(surf, (0, 255, 0), (bar_x, bar_y, bar_width * hp_ratio, bar_height))
+        pygame.draw.rect(surf, color, (bar_x, bar_y, bar_width * hp_ratio, bar_height))
+        pygame.draw.rect(surf, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
+        
+        # фаза-индикатор
+        phase_text = pygame.font.Font(None, 20).render(
+            f"Phase {self.phase + 1}", True, color
+        )
+        surf.blit(phase_text, (bar_x, bar_y - 22))
 
     def damage(self, amount):
         self.hp -= amount
         return self.hp <= 0
-
 
 
 class Bacteria:

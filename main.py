@@ -50,7 +50,7 @@ player_sprites = {
     "walk2": get_sprite(character_sheet3, 0, 0, CHAR_SIZE, CHAR_SIZE),
     "jump": get_sprite(character_sheet4, 0, 0, CHAR_SIZE, CHAR_SIZE),
     "idle": get_sprite(character_sheet1, 0, 0, CHAR_SIZE, CHAR_SIZE),
-    "shift": get_sprite(character_sheet5, 0, 0, CHAR_SIZE, CHAR_SIZE)
+    "shift": get_sprite(character_sheet5 , 0, 0, CHAR_SIZE, CHAR_SIZE)
 }
 # === Спрайты босса ===
 boss_sprites = {
