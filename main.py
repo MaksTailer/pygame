@@ -35,8 +35,18 @@ character_sheet5 = pygame.image.load("assets/character/5.png").convert_alpha()
 
 ground = pygame.image.load("assets/ground.png").convert_alpha()
 enemy_sheet = pygame.image.load("assets/enemies.png").convert_alpha()
+
+virus_sheet1 = pygame.image.load("assets/virus/v1.png").convert_alpha()
+virus_sheet2 = pygame.image.load("assets/virus/v2.png").convert_alpha()
+virus_sheet3 = pygame.image.load("assets/virus/v3.png").convert_alpha()
+
+bacteria_sheet1 = pygame.image.load("assets/bacteria/b1.png").convert_alpha()
+bacteria_sheet2 = pygame.image.load("assets/bacteria/b2.png").convert_alpha()
+bacteria_sheet3 = pygame.image.load("assets/bacteria/b3.png").convert_alpha()
+
 shot_sheet = pygame.image.load("assets/fire.png").convert_alpha()
 boss_sheet = pygame.image.load("assets/Boss-1.png").convert_alpha()
+boss_sheet2 = pygame.image.load("assets/Boss-2.png").convert_alpha()
 
 # === Функция для нарезки спрайтов ===
 def get_sprite(sheet, x, y, w, h):
@@ -55,6 +65,7 @@ player_sprites = {
 # === Спрайты босса ===
 boss_sprites = {
     "idle1": get_sprite(boss_sheet, 0, 0, 256, 256),
+    "idle2": get_sprite(boss_sheet2, 0, 0, 256, 256),
 }
 
     # Нарезаем спрайты бактерии из enemies.png
@@ -188,15 +199,15 @@ def main(current_level=0, saved_coins=0, saved_diamonds=0):
 
     
     bacteria_sprites = {
-    "idle": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),      # (0, 0)
-    "walk1": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
-    "walk2": get_sprite(enemy_sheet, 0, 2, TILE_SIZE, TILE_SIZE),
+    "idle": get_sprite(bacteria_sheet1, 0, 0, TILE_SIZE, TILE_SIZE),      # (0, 0)
+    "walk1": get_sprite(bacteria_sheet2, 0, 0, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
+    "walk2": get_sprite(bacteria_sheet3, 0, 0, TILE_SIZE, TILE_SIZE),
     }
 
     virus_sprites = {
-    "idle": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),      # (0, 0)
-    "walk1": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
-    "walk2": get_sprite(enemy_sheet, 1, 1, TILE_SIZE, TILE_SIZE),
+    "idle": get_sprite(virus_sheet3, 0, 0, TILE_SIZE, TILE_SIZE),      # (0, 0)
+    "walk1": get_sprite(virus_sheet2, 0, 0, TILE_SIZE, TILE_SIZE),      # (0, 128) в пикселях
+    "walk2": get_sprite(virus_sheet1, 0, 0, TILE_SIZE, TILE_SIZE),
     }
     proj_img1 = get_sprite(shot_sheet, 0, 0, TILE_SIZE, TILE_SIZE)
     proj_img2 = get_sprite(shot_sheet, 0, 1, TILE_SIZE, TILE_SIZE)

@@ -49,6 +49,7 @@ class Boss:
         self.gravity = 0.8
         self.on_ground = False
         self.facing_right = True
+        
 
         # Фазы боя
         self.phase = 0  # 0=обычная, 1=агрессивная, 2=берсерк
@@ -205,7 +206,11 @@ class Boss:
             self.last_shot = now
         
         # визуал
-        self.image = self.sprites.get("idle1", self.image)
+        if self.phase == 2:
+            self.image = self.sprites.get("idle2", self.image)
+        else:
+            self.image = self.sprites.get("idle1", self.image)
+
         self.rect = self.image.get_rect(topleft=self.hitbox.topleft)
 
     def _shoot_direct(self, px, py, player, projectiles):
